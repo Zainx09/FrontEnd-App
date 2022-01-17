@@ -1,0 +1,25 @@
+npx react-native init MainApp
+
+Run instructions for Android:
+    • Have an Android emulator running (quickest way to get started), or a device connected.
+    • cd "I:\ZAIN DRIVE\FYP\PROJECT-FOLDER\FRONTEND-APP\MainApp_v1" && npx react-native run-android
+
+    npx react-native start
+
+npm i @react-native-community/cli-platform-android
+
+
+//for reanimation works go to
+/android/app/build.gradle
+make this line true
+def enableHermes = project.ext.react.get("enableHermes", true);
+
+/MainApplication.java
+import com.facebook.react.bridge.JSIModulePackage; // <- add
+import com.swmansion.reanimated.ReanimatedJSIModulePackage; // <- add
+
+inside ReactNativeHost function
+@Override
+    protected JSIModulePackage getJSIModulePackage() {
+        return new ReanimatedJSIModulePackage(); // <- add
+    }

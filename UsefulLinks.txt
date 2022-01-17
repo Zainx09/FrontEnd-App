@@ -1,0 +1,5 @@
+ADB Issue solved:
+https://www.youtube.com/watch?v=sCY1VSmTlfA
+
+Emulator Issue solved:
+https://exerror.com/solved-the-emulator-process-for-avd-pixel_c_api_30-was-killed-in-windows/
