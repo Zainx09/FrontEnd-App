@@ -12,6 +12,10 @@ npm install react-native-screens react-native-safe-area-context
 
 expo install expo-sensors
 
+npm install expo-sensors
+
+npm i react-native-sensors
+
 npm i react-native-gesture-handler
 npm install --save react-native-reanimated 
 expo install react-native-screens
@@ -81,3 +85,5 @@ npm install react-native-get-random-values
 
 npm install react-native-agora
 npm i agora-rn-uikit
+
+npm i react-native-unimodules

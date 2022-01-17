@@ -6,11 +6,12 @@ import { StyleSheet, Text, View , TouchableOpacity} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+
 import PusherApp from '../../pusherApp/PusherApp';
 import pusherConfig from '../pusher.json';
 import NavigationButtons from './NavigationButtons';
 
-
+// import SensorReading from "./SensorReading"
 
 export default function UserEndUI(){
 
@@ -76,7 +77,8 @@ export default function UserEndUI(){
 
   return (
       <View style={{flex:1}}>
-        <NavigationButtons messages={ messages } onSendMessage={ onSendMessage } />
+        <NavigationButtons messages={ messages } onSendMessage={ onSendMessage } /> 
+        {/* <SensorReading /> */}
       </View>
   );
 }
