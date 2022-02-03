@@ -5,7 +5,6 @@ Run instructions for Android:
     • cd "I:\ZAIN DRIVE\FYP\PROJECT-FOLDER\FRONTEND-APP\MainApp_v1" && npx react-native run-android
 
     npx react-native start
-
 npm i @react-native-community/cli-platform-android
 
 

@@ -32,12 +32,13 @@ const SignInScreen=({navigation})=>{
                 console.log('TOKEN = ',response.data.token)
 
                 navigation.dispatch(
-                StackActions.replace('MainFlow'))
+                StackActions.replace('HomePageScreen'))
 
             }else{
                 alert('Please Type Correct Email or Passward!')
             }
         }catch(err){
+            alert(err.response.data.error)
             console.log(err.response.data);
         }        
     }
@@ -53,8 +54,8 @@ const SignInScreen=({navigation})=>{
             <Text style={{marginBottom:10, alignSelf:'center', fontSize:20, fontWeight:'bold', color:'midnightblue'}}>Sign In</Text>
                 
                 <TextInput
+                style={styles.inputStyle}
                     keyboardType="email-address"
-                    style={styles.inputStyle}
                     placeholder="Email"
                     onChangeText={(text)=>{setEmail(text)}}
                     />
@@ -77,7 +78,7 @@ const SignInScreen=({navigation})=>{
                 
                 <View style={{marginTop:5, paddingHorizontal:25 , alignItems:'center', flexDirection:'row'}} >
                     <Text style={{fontSize:13, color:'black'}}>Create Account?</Text>
-                    <Text style={{fontSize:14, fontWeight:'bold', color:'midnightblue'}} onPress={()=>navigation.navigate('SignUpScreen')}>    Sign Up</Text>
+                    <Text style={{fontSize:14, fontWeight:'bold', color:'midnightblue'}} onPress={()=>navigation.dispatch(StackActions.replace('SignUpScreen'))}>    Sign Up</Text>
                 </View>
                 
                 {/* <Button title="Go to Sign In" onPress={()=>navigation.navigate('SignUpScreen')}></Button> */}
@@ -100,7 +101,8 @@ const styles = StyleSheet.create({
         paddingHorizontal:10,
         height: 45, 
         borderColor: 'midnightblue', 
-        borderWidth: 1
+        borderWidth: 1,
+        color:'black'
     }
 });
 

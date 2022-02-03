@@ -18,17 +18,18 @@ export default function SignUpFlow({navigation}){
 
     
     return(
-        <SafeAreaView style={{ flex: 1}}>
-            
-                <SignUpStack.Navigator
-                screenOptions={{
-                    headerShown: false
-                    }}>
-                    <SignUpStack.Screen name="SignUpScreen" component={SignUpScreen} />
-                    <SignUpStack.Screen name="SignInScreen" component={SignInScreen} />
-                </SignUpStack.Navigator>
-            
-        </SafeAreaView>
+        <></>
+        // <SafeAreaView style={{ flex: 1}}>
+        //     <NavigationContainer>
+        //         <SignUpStack.Navigator
+        //         screenOptions={{
+        //             headerShown: false
+        //             }}>
+        //             <SignUpStack.Screen name="SignUpScreen" component={SignUpScreen} />
+        //             <SignUpStack.Screen name="SignInScreen" component={SignInScreen} />
+        //         </SignUpStack.Navigator>
+        //     </NavigationContainer>
+        // </SafeAreaView>
         
     )
 }

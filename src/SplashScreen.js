@@ -11,7 +11,8 @@ import {StackActions} from '@react-navigation/native';
 import Api from './api/Api'
 
 
-const Stack = createNativeStackNavigator();
+import MainFlow from './mainflow/MainFlow';
+import SignUpFlow from './signupflow/SignUpFlow';
 
 export default function SplashScreen({navigation}){
 
@@ -24,21 +25,36 @@ export default function SplashScreen({navigation}){
                 const response2 = await Api.post('/checkLogin' , { 'token': token });
                 console.log(response2.data);
                 if(response2.data){
-                    navigation.dispatch(
-                    StackActions.replace('MainFlow'))
+                    return(
+                        navigation.dispatch(
+                            StackActions.replace('HomePageScreen'))
+                    )
+                    
+                    // setFlow('MainFlow');
                 }else{
                     console.log('response Not Get')
-                    navigation.dispatch(
-                    StackActions.replace('SignUpFlow'))
+                    return(
+                        navigation.dispatch(
+                            StackActions.replace('SignUpScreen'))
+                    )
+                    
+                    // setFlow('SignUpFlow');
                 }
             }else{
                 console.log('Token Not found')
-                navigation.dispatch(
-                StackActions.replace('SignUpFlow'))
+                return(
+                    navigation.dispatch(
+                        StackActions.replace('SignUpScreen'))
+                )
+                // setFlow('SignUpFlow');
             }
 
         }catch(e){
             console.log("Error : ",e)
+            return(
+                navigation.dispatch(
+                    StackActions.replace('SignUpScreen'))
+            )
         }        
     }
 
@@ -50,9 +66,21 @@ export default function SplashScreen({navigation}){
 
   return (
 
-    <SafeAreaView style={{ flex: 1 , borderWidth:1, borderStyle:'solid' , borderColor:'red'}}>
-        <Text style={{fontSize:10 , color:'black'}}>Splash Screen</Text>
-    </SafeAreaView>
+    // <>
+    //     {flow ?  flow==='MainFlow'? <MainFlow /> : <SignUpFlow />
+    //         : 
+    //         <SafeAreaView style={{ flex: 1 , borderWidth:1, borderStyle:'solid' , borderColor:'red'}}>
+    //             <Text style={{fontSize:10 , color:'black'}}>Splash Screen</Text>
+    //         </SafeAreaView>
+    //     }
+
+    // </>
+
+        <SafeAreaView style={{ flex: 1 , borderWidth:1, borderStyle:'solid' , borderColor:'red'}}>
+            <Text style={{fontSize:10 , color:'black'}}>Splash Screen</Text>
+        </SafeAreaView>
+
+    
    
   );
 }

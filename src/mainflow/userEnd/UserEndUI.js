@@ -5,80 +5,52 @@ import Pusher from 'pusher-js/react-native';
 import { StyleSheet, Text, View , TouchableOpacity} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import {StackActions} from '@react-navigation/native';
 
 
-import PusherApp from '../../pusherApp/PusherApp';
-import pusherConfig from '../pusher.json';
-import NavigationButtons from './NavigationButtons';
+export default function UserEndUI({navigation}){
 
-// import SensorReading from "./SensorReading"
+  function goToScreen(screen){
+    if(screen === 'VideoCallScreen'){
+        navigation.navigate('VideoCallScreen')
 
-export default function UserEndUI(){
+    }else if(screen === 'VideoCallScreenWithControlls'){
+        navigation.navigate('VideoCallScreenWithControlls')
 
-  const [messages , setMessages] = useState('')
-  useEffect(() => {
-    const pusher = new Pusher(pusherConfig.key, pusherConfig); // (1)
-    const chatChannel = pusher.subscribe('chat_channel'); // (2)
-    chatChannel.bind('pusher:subscription_succeeded', () => { // (3)
-      chatChannel.bind('join', (data) => { // (4)
-        handleJoin(data.name);
-      });
-      chatChannel.bind('part', (data) => { // (5)
-        handlePart(data.name);
-      });
-      chatChannel.bind('message', (data) => { // (6)
-        handleMessage(data.name, data.message);
-      });
-    });
+    }else if(screen === 'VideoCallScreenWithVirtualControlls'){
+      navigation.navigate('VideoCallScreenWithVirtualControlls')
 
-    // Anything in here is fired on component mount.
-    fetch(`${pusherConfig.restServer}/users/${'zain'}`, {
-      method: 'PUT'
-    });
-
-    // return () => {
-    //   setMessages('');
-    //   // Anything in here is fired on component unmount.
-    //   fetch(`${pusherConfig.restServer}/users/${'zain'}`, {
-    //       method: 'DELETE'
-    //   });
-    // }
-
-  }, []);
-
-
-  const handleJoin=(name)=>{ 
-    setMessages({action: 'join', name: name, message: 'Connected'})
   }
-    
-  const handlePart=(name)=>{
-    setMessages({action: 'part', name: name , message: 'Disconnected'})
   }
-   
-  const handleMessage=(name, message)=>{
-    setMessages({action: 'message', name: name, message: message})
-  } 
-
-
-  const onSendMessage=(text)=>{ // (9)
-    const payload = {
-        message: text
-    };
-    fetch(`${pusherConfig.restServer}/users/${'zain'}/messages`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    });
-  }
-
-
 
   return (
-      <View style={{flex:1}}>
-        <NavigationButtons messages={ messages } onSendMessage={ onSendMessage } /> 
-        {/* <SensorReading /> */}
+      <View style={{flex:1, alignItems:'center', justifyContent:'space-evenly'}}>
+
+        <Text style={{color:'black'}}>Select Calling Option</Text>
+
+        <TouchableOpacity 
+          style={{width:'60%', height:100, alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black'}}
+          onPress={()=>{goToScreen('VideoCallScreen')}}
+          >
+          <Text style={{color:'black', fontSize:20}}>Only Video Call</Text>
+        </TouchableOpacity>
+
+
+        <TouchableOpacity 
+        style={{width:'60%', height:100, alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black'}}
+        onPress={()=>{goToScreen('VideoCallScreenWithControlls')}}
+        >
+          <Text style={{color:'black', fontSize:20}}>With Navigation</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+        style={{width:'60%', height:100, alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black'}}
+        onPress={()=>{goToScreen('VideoCallScreenWithVirtualControlls')}}
+        >
+          <Text style={{color:'black', fontSize:20}}>With Virtual Navigation</Text>
+        </TouchableOpacity>
+          
       </View>
+
   );
 }

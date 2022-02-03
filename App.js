@@ -48,25 +48,54 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import SignUpFlow from './src/signupflow/SignUpFlow';
-import MainFlow from './src/mainflow/MainFlow';
 import SplashScreen from './src/SplashScreen';
+
+//////////// SignUpFLow ///////////////////////
+import SignUpFlow from './src/signupflow/SignUpFlow';
+import SignUpScreen from "./src/signupflow/SignUpScreen";
+import SignInScreen from "./src/signupflow/SignInScreen";
+
+////////////// MainFlow ///////////////////////
+import MainFlow from './src/mainflow/MainFlow';
 import MainScreen from './src/pusherApp/MainScreen';
+import HomePage from "./src/mainflow/HomePage"
+import UserEndUI from "./src/mainflow/userEnd/UserEndUI"
+import VideoCallScreen from "./src/mainflow/userEnd/VideoCallScreen";
+import VideoCallScreenWithControlls from "./src/mainflow/userEnd/VIdeoCallScreenWithControlls";
+import VideoCallScreenWithVirtualControlls from './src/mainflow/userEnd/VideoCallScreenWithVirtualControlls';
+
+import RoboticEndUI from "./src/mainflow/roboticEnd/RoboticEndUI"
 
 const Stack = createNativeStackNavigator();
 
 export default function App(){
   return (
 
+    // <>
+    //   <SplashScreen />
+    // </>
+
     <NavigationContainer>
         <Stack.Navigator 
             screenOptions={{
             headerShown: false
             }}>
-            {/* <Stack.Screen name="MainScreen" component={MainScreen} /> */}
-            {/* <Stack.Screen name="SplashScreen" component={SplashScreen} />
-            <Stack.Screen name="SignUpFlow" component={SignUpFlow} /> */}
-            <Stack.Screen name="MainFlow" component={MainFlow} />
+              <Stack.Screen name="SplashScreen" component={SplashScreen} />
+
+              {/* <Stack.Screen name="SignUpFlow" component={SignUpFlow} /> */}
+              <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
+              <Stack.Screen name="SignInScreen" component={SignInScreen} />
+
+              {/* <Stack.Screen name="MainFlow" component={MainFlow} /> */}
+              {/* <Stack.Screen name="MainScreen" component={MainScreen} /> */}
+              <Stack.Screen name="HomePageScreen" component={HomePage} />
+              <Stack.Screen name="UserEndScreen" component={UserEndUI} />
+              <Stack.Screen name="VideoCallScreen" component={VideoCallScreen} />
+              <Stack.Screen name="VideoCallScreenWithControlls" component={VideoCallScreenWithControlls} />
+              <Stack.Screen name="VideoCallScreenWithVirtualControlls" component={VideoCallScreenWithVirtualControlls} />
+              <Stack.Screen name="RoboticEndScreen" component={RoboticEndUI} />
+              
+            
         </Stack.Navigator>
 
     </NavigationContainer>

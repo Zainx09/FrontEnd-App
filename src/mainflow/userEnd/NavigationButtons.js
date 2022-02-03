@@ -51,60 +51,33 @@ export default function NavigationButtons(props){
  
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding">
-      {/* <FlatList data={ props.messages } 
-                renderItem={ renderItem }
-                styles={ styles.messages } /> */}
-      <Text style={{color:'black'}}>{up}</Text>
-      {/* <Text>{msg}</Text> */}
-      
-      <View style={styles.Navigation}>
-                
-        <TouchableOpacity onPressIn={()=>onSendMessage('up', 'UP IN')} onPressOut={()=>onSendMessage('up', 'UP OUT')}>
-          <Text style={{color:'black'}}>UP</Text>
-        </TouchableOpacity>
+    
 
-      </View>
-
-      <View style={styles.Navigation}>
-
+      <View style={[styles.Navigation , {flexDirection:'column' , alignItems:'center' , justifyContent:'center'}]}>
         <TouchableOpacity onPressIn={()=>onSendMessage('left', 'LEFT IN')} onPressOut={()=>onSendMessage('left', 'LEFT OUT')}>
           <Text style={{color:'black'}}>LEFT</Text>
         </TouchableOpacity>
-
-        <TouchableOpacity onPressIn={()=>onSendMessage('right', 'RIGHT IN')} onPressOut={()=>onSendMessage('right', 'RIGHT OUT')}>
-          <Text style={{color:'black'}}>RIGHT</Text>
-        </TouchableOpacity>
-
       </View>
 
-      <View style={styles.Navigation}>
+      <View style={[styles.Navigation , {flexDirection:'column'}]}>
+          <TouchableOpacity 
+            style={{height:'50%', width:'100%', justifyContent:'center' , borderWidth:1 , alignItems:'center'}}
+            onPressIn={()=>onSendMessage('up', 'UP IN')} onPressOut={()=>onSendMessage('up', 'UP OUT')}>
+            <Text style={{color:'black'}}>UP</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity onPressIn={()=>onSendMessage('down', 'DOWN IN')} onPressOut={()=>onSendMessage('down', 'DOWN OUT')}>
-          <Text style={{color:'black'}}>DOWN</Text>
-        </TouchableOpacity>
-        
+          <TouchableOpacity 
+            style={{height:'50%', width:'100%', justifyContent:'center' , borderWidth:1 , alignItems:'center'}}
+            onPressIn={()=>onSendMessage('down', 'DOWN IN')} onPressOut={()=>onSendMessage('down', 'DOWN OUT')}>
+            <Text style={{color:'black'}}>DOWN</Text>
+          </TouchableOpacity>
       </View>
 
-      
-
-      
-
-      
-
-      
-       
-      
-      
-      {/* <TextInput autoFocus
-                  keyboardType="default"
-                  returnKeyType="done"
-                  enablesReturnKeyAutomatically
-                  style={ styles.input }
-                  blurOnSubmit={ false }
-                  onSubmitEditing={ onSendMessage }
-                  // ref={inputRef}
-                  /> */}
-      
+      <View style={[styles.Navigation , {flexDirection:'column' , alignItems:'center' , justifyContent:'center'}]}>
+          <TouchableOpacity onPressIn={()=>onSendMessage('right', 'RIGHT IN')} onPressOut={()=>onSendMessage('right', 'RIGHT OUT')}>
+            <Text style={{color:'black'}}>RIGHT</Text>
+          </TouchableOpacity>
+      </View>
     </KeyboardAvoidingView>
   );
 
@@ -127,18 +100,13 @@ const renderItem=({item})=>{ // (3)
 
 const styles = StyleSheet.create({
   container: {
-    borderWidth:2,
     flex: 1,
-    backgroundColor: '#fff',
-    paddingTop: 30
+    flexDirection:'row',
+    justifyContent:'center',
+    borderWidth:2,  
   },
   Navigation:{
-    height:80,
-    flexDirection:'row',
-    alignItems:'center',
-    justifyContent:'space-evenly',
-    borderWidth:1,
-    borderColor:'black'
+    width:'32%'
   },
   messages: {
     alignSelf: 'stretch'

@@ -86,4 +86,4 @@ npm install react-native-get-random-values
 npm install react-native-agora
 npm i agora-rn-uikit
 
-npm i react-native-unimodules
+npm i mathjs

@@ -10,7 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const SignUpScreen=({navigation})=>{
 
-    
+    const[username, setUsername] = useState('')
     const[email, setEmail] = useState('')
     const[password, setPassword] = useState('')
     const[rePassword , setRePassword] = useState('')
@@ -25,34 +25,38 @@ const SignUpScreen=({navigation})=>{
     
 
     async function signUp(){
-        if(email!==""){
-            if(password.length>4){
-                if(password===rePassword){
+        if(username!=""){
+            if(email!==""){
+                if(password.length>4){
+                    if(password===rePassword){
 
-                    try{
-                        console.log('Sent');
-                        const response = await Api.post('/signup' , { email , password });
-                        setToken(response.data.token)
+                        try{
+                            console.log('Sent');
+                            const response = await Api.post('/signup' , { username , email , password });
+                            setToken(response.data.token)
 
-                        await AsyncStorage.setItem('token', response.data.token)
-                        console.log('TOKEN = ',response.data.token)
-                        
-                        navigation.dispatch(
-                        StackActions.replace('MainFlow'))
+                            await AsyncStorage.setItem('token', response.data.token)
+                            console.log('TOKEN = ',response.data.token)
+                            
+                            navigation.dispatch(
+                            StackActions.replace('HomePageScreen'))
 
-                    }catch(err){
-                        console.log(err.response.data);
-                    }   
-
-                    
+                        }catch(err){
+                            alert(err.response.data)
+                            console.log(err.response.data);
+                        }   
+  
+                    }else{
+                        return alert('Password Match')
+                    }
                 }else{
-                    return alert('Password Match')
+                    return alert('Short length')
                 }
             }else{
-                return alert('Short length')
+                return alert('Where is Email?')
             }
         }else{
-            return alert('Where is Email?')
+            return alert('Where is Username?')
         }
     }
 
@@ -61,6 +65,12 @@ const SignUpScreen=({navigation})=>{
 
             <View style={{margin:30}}>
             <Text style={{marginBottom:10, alignSelf:'center', fontSize:20, fontWeight:'bold', color:'midnightblue'}}>Create Account</Text>
+
+                <TextInput
+                    style={styles.inputStyle}
+                    placeholder="Username"
+                    onChangeText={(text)=>{setUsername(text)}}
+                    />
 
                 <TextInput
                     keyboardType="email-address"
@@ -94,7 +104,7 @@ const SignUpScreen=({navigation})=>{
 
                 <View style={{marginTop:5, paddingHorizontal:25 , alignItems:'center', flexDirection:'row'}} >
                     <Text style={{fontSize:13, color:'black'}}>Already have account?</Text>
-                    <Text style={{fontSize:14, fontWeight:'bold', color:'midnightblue'}} onPress={()=>navigation.navigate('SignInScreen')}>    Sign In</Text>
+                    <Text style={{fontSize:14, fontWeight:'bold', color:'midnightblue'}} onPress={()=>navigation.dispatch(StackActions.replace('SignInScreen'))}>    Sign In</Text>
                 </View>
             </View>
 

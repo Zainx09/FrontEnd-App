@@ -1,132 +1,138 @@
-// import React, { useState, useEffect } from 'react';
-// import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-// import { DeviceMotion } from 'expo-sensors'; 
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View , Button} from 'react-native';
+import { setUpdateIntervalForType, SensorTypes, accelerometer ,gyroscope, orientation  } from "react-native-sensors";
 
+setUpdateIntervalForType(SensorTypes.orientation  , 500);
 
-// export default function SensorReading() {
+export default function SensorReading() {
 
-//     const [data, setData] = useState({});
-//     //Call Once when Screen loads
-//     useEffect(() => {
-//       //Subscribe Function
-//       _subscribe();
-//       //Call Once when Screen unloads
-//       return () => {
-//         _unsubscribe(); //Unsubscribe Function
-//       };
-//     }, []);
+  function quaternionToAngles(q){
+    let data = q;
   
-//     //SetInterval between listening of 2 DeviceMotion Action
-//     const _setInterval = () => {
-//       DeviceMotion.setUpdateInterval(77);
-//     };
+    let ysqr = data.qy * data.qy;
+    let t0 = -2.0 * (ysqr + data.qz * data.qz) + 1.0;
+    let t1 = +2.0 * (data.qx * data.qy + data.qw * data.qz);
+    // let t2 = -2.0 * (data.qx * data.qz - data.qw * data.qy);
+    let t3 = +2.0 * (data.qy * data.qz + data.qw * data.qx);
+    let t4 = -2.0 * (data.qx * data.qx + ysqr) + 1.0;
   
-//     const _subscribe = () => {
-//       //Adding the Listener
-//       DeviceMotion.addListener((devicemotionData) => {
-//         setData(devicemotionData.rotation);
-//       });
-//       //Calling setInterval Function after adding the listener
-//       _setInterval();
-//     };
+    // t2 = t2 > 1.0 ? 1.0 : t2;
+    // t2 = t2 < -1.0 ? -1.0 : t2;
   
-//     const _unsubscribe = () => {
-//       //Removing all the listeners at end of screen unload
-//       DeviceMotion.removeAllListeners();
-//     };
+    const toDeg = 180 / Math.PI;
   
-  
-//     // let { beta, gamma } = data;
-//     // gamma = round(gamma);
-//     // beta = round(beta);
-  
-//     return (
-//       <View
-//         style={{
-//           justifyContent: "center",
-//           alignItems: "center",
-//           flex: 1,
-//           backgroundColor: "#BBB",
-//         }}
-//       >
-        
-//         <Text>
-//           {/* y-axis */}
-//           {JSON.stringify("Y-axis : "+round( (data.gamma)*(180/3.142) ))}
-//         </Text>
-  
-        
-//         <Text>
-//           {JSON.stringify("X-axis : "+round( (data.alpha)*(180/3.142) ))}
-//         </Text>
-        
-//       </View>
-//     );
+    const euler = {};
+    // euler.pitch = Math.asin(t2) * toDeg;
+    euler.roll = Math.atan2(t3, t4) * toDeg;
+    euler.yaw = Math.atan2(t1, t0) * toDeg;
+ 
+    return euler;
+  }
 
-// }
-
-// function round(n) {
-//     if (!n) {
-//       return 0;
-//     }
-//     return Math.floor(n * 100) / 100;
-//   }
-
-
-
-
-
-// import React, { useState, useEffect } from 'react';
-// import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-// import { setUpdateIntervalForType, SensorTypes, gyroscope } from "react-native-sensors";
-
-// export default function SensorReading() {
-
-//   const [data, setData] = useState({});
+  const [data, setData] = useState(null);
+  const [data2, setData2] = useState(null);
      
-//   //Call Once when Screen loads
-//   // useEffect(() => {
-
-//   // //   setInterval(()=>{
-//   //     _subscribe();
-//   // //   },2000)
-//   // //   //Subscribe Function
-//   // //   // 
-//   // //   //Call Once when Screen unloads
-//   //   return () => {
-//   //     _unsubscribe(); //Unsubscribe Function
-//   //   };
-//   // }, []);
-
-
-//   // setInterval(()=>{
-//   //       _subscribe();
-//   //     },2000)
-
-//   setUpdateIntervalForType(SensorTypes.gyroscope, 100);
-//   gyroscope.subscribe(({ x, y, z}) =>{
-//     setData({'x':x , 'y':y , 'z':z});
-//   });
-
-
-//   const _subscribe = () =>{
-//     const subscription = gyroscope.subscribe(({ x, y, z}) =>{
-//       setData({'x':x , 'y':y , 'z':z});
-//       // console.log({ x, y, z, timestamp });
-//     })
-//   }
-
-//   const _unsubscribe = () => {
-//     //Removing all the listeners at end of screen unload
-//     gyroscope.unsubscribe();
-//   };
-
-//   return(
-//     <>
-//       <Text style={{color:'black'}}> {data?data.x:null} </Text>
-//       <Text style={{color:'black'}}> {data?data.y:null} </Text>
-//       <Text style={{color:'black'}}> {data?data.z:null} </Text>
-//     </>
+  //Call Once when Screen loads
+  useEffect(() => {
     
-//   )
-// }
+    // setInterval(()=>{
+      _subscribe();
+        
+  }, []);
+
+
+ function _subscribe(){
+
+   orientation.subscribe(({qx, qy, qz, qw, pitch, roll, yaw}) =>{
+        // setData({'qx':qx, 'qy':qy, 'qz':qz, 'qw':qw, 'pitch':pitch, 'roll':roll, 'yaw':yaw});
+        let dat = {'qx':qx, 'qy':qy, 'qz':qz, 'qw':qw,};
+        let euler = quaternionToAngles(dat);
+
+        // setData({'roll':round(euler.roll), 'yaw':round(euler.yaw)});
+        setData({'roll':getAngle('roll',euler.roll), 'yaw':getAngle('yaw',euler.yaw)});
+
+        setData2({'roll':round(euler.roll), 'yaw':round(euler.yaw)});
+      }) 
+  }
+
+  return(
+    <>
+      {/* <Text style={{color:'black'}}> x : {data?data.pitch:null} </Text> */}
+      <Text style={{color:'black'}}> y : {data?data.roll:null} </Text>
+      <Text style={{color:'black'}}> z : {data?data.yaw:null} </Text>
+
+      <Text style={{color:'black'}}>------------------</Text>
+
+      <Text style={{color:'black'}}> y : {data2?data2.roll:null} </Text>
+      <Text style={{color:'black'}}> z : {data2?data2.yaw:null} </Text>
+    </>
+    
+  )
+}
+
+function getAngle(type , angle){
+
+  if(type === 'roll'){
+    if (angle > 160){
+      return 155
+    }else if(angle > -90 && angle < 20){
+      return 25
+    }else if(angle < -90){
+      return 155
+    }
+
+  }else if(type === 'yaw'){
+    if(angle > -90 && angle < 0){
+      return 5
+    }else if(angle < -90){
+      return 175
+    }
+  }
+
+  
+
+  if (angle < 10){
+    return 5
+  }else if (angle < 20){
+    return 15
+  }else if (angle < 30){
+    return 25
+  }else if (angle < 40){
+    return 35
+  }else if (angle < 50){
+    return 45
+  }else if (angle < 60){
+    return 55
+  }else if (angle < 70){
+    return 65
+  }else if (angle < 80){
+    return 75
+  }else if (angle < 90){
+    return 85
+  }else if (angle < 100){
+    return 95
+  }else if (angle < 110){
+    return 105
+  }else if (angle < 120){
+    return 115
+  }else if (angle < 130){
+    return 125
+  }else if (angle < 140){
+    return 135
+  }else if (angle < 150){
+    return 145
+  }else if (angle < 160){
+    return 155
+  }else if (angle < 170){
+    return 165
+  }else if (angle < 180){
+    return 175
+  }
+}
+
+function round(n) {
+    if (!n) {
+      return 0;
+    }
+    return Math.floor(n * 100) / 100;
+  }

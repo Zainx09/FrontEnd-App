@@ -10,8 +10,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import pusherConfig from '../pusher.json';
 
 
-
-
 export default function RoboticEndUI(){
 
   const [messages , setMessages] = useState('')
@@ -43,6 +41,11 @@ export default function RoboticEndUI(){
     //       method: 'DELETE'
     //   });
     // }
+
+    return(()=>{
+      chatChannel.unsubscribe('chat_channel');
+    })
+
   }, []);
 
 
@@ -62,7 +65,7 @@ export default function RoboticEndUI(){
 
   return (
       <View style={{flex:1}}>
-        <Text>{messages.message}</Text>
+        <Text>{messages?messages.message:'ABCD'}</Text>
       </View>
   );
 }
