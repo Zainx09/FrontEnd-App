@@ -66,6 +66,8 @@ import VideoCallScreenWithVirtualControlls from './src/mainflow/userEnd/VideoCal
 
 import RoboticEndUI from "./src/mainflow/roboticEnd/RoboticEndUI"
 
+import BluetoothTest from './src/Bluetooth/BluetoothTest';
+
 const Stack = createNativeStackNavigator();
 
 export default function App(){
@@ -80,6 +82,8 @@ export default function App(){
             screenOptions={{
             headerShown: false
             }}>
+              <Stack.Screen name="BluetoothTest" component={BluetoothTest} />
+
               <Stack.Screen name="SplashScreen" component={SplashScreen} />
 
               {/* <Stack.Screen name="SignUpFlow" component={SignUpFlow} /> */}

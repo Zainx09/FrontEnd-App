@@ -6,8 +6,7 @@ import 'react-native-gesture-handler';
 
 import React from 'react';
 import { useState , useEffect} from 'react';
-import { StyleSheet, Text, View , TouchableOpacity , Dimensions} from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { StyleSheet, Text, View , TouchableOpacity , Dimensions , TextInput} from 'react-native';
 
 import Pusher from 'pusher-js/react-native';
 import pusherConfig from '../pusher.json';
@@ -64,13 +63,23 @@ export default function VideoCallScreenWithVirtualControlls({navigation}){
     // const [data, setData] = useState(null);
 
     ///////////////// Video Call //////////////////////
+    const [callOption , setCallOption] = useState(null);
+    const [callID , setCallID] = useState('')
     const [videoCall, setVideoCall] = useState(false);
     const rtcProps = {
         appId: '72c2e0389a9e4beabcddc99e0d15a9d1',
-        token:'00672c2e0389a9e4beabcddc99e0d15a9d1IAC5W+KMppWU2M++xDl3sty6tzFIe8uMtLfVN+Fpb8lZHUOQEggAAAAAEABLPQ3JlEnlYQEAAQCUSeVh',
+        token:'00672c2e0389a9e4beabcddc99e0d15a9d1IAAjyE5HNSwDIi8bRxSMHVMyFnnMUznTvW7DekXUNsDgl0OQEggAAAAAEADbqsx0Spr+YQEAAQBKmv5h',
         channel: 'myChannel'
     };
     const callbacks = {EndCall: () => setVideoCall(false)};
+
+    function checkId(Id){
+      if(Id === rtcProps.appId){
+        setVideoCall(true);
+      }else{
+        alert('Please Type Correct ID.')
+      }
+    }
     ///////////////// Video Call //////////////////////
 
 
@@ -120,17 +129,17 @@ export default function VideoCallScreenWithVirtualControlls({navigation}){
         // setData({'roll':round(euler.roll), 'yaw':round(euler.yaw)});
         setData({'roll':getAngle('roll',euler.roll), 'yaw':getAngle('yaw',euler.yaw)});
           //  console.log('call')
-
-         if(data){
+        if (videoCall){
+          if(data){
             if (data.roll === getAngle('roll',euler.roll) && data.yaw === getAngle('yaw',euler.yaw)){
-                console.log('same')
+                return null
             }else{
                 const txt = 'y = '+ getAngle('roll',euler.roll) + " z = " + getAngle('yaw',euler.yaw)
-                console.log('change')
+                // console.log('change')
                 onSendMessage(txt);
             }
           }
-  
+        }
       })
 
       return(()=>{
@@ -158,12 +167,12 @@ export default function VideoCallScreenWithVirtualControlls({navigation}){
         chatChannel.bind('join', (data) => { // (4)
             handleJoin(data.name);
         });
-        chatChannel.bind('part', (data) => { // (5)
-            handlePart(data.name);
-        });
-        chatChannel.bind('message', (data) => { // (6)
-            handleMessage(data.name, data.message);
-        });
+        // chatChannel.bind('part', (data) => { // (5)
+        //     handlePart(data.name);
+        // });
+        // chatChannel.bind('message', (data) => { // (6)
+        //     handleMessage(data.name, data.message);
+        // });
         });
 
         fetch(`${pusherConfig.restServer}/users/${'zain'}`, {
@@ -216,37 +225,88 @@ export default function VideoCallScreenWithVirtualControlls({navigation}){
 
 
 
-    return(
-        <View style={{flex:1}}> 
+    return (
+      // <View style={{flex:1}}>
+      //   <Text>{messages?messages.message:'ABCD'}</Text>
+      // </View>
 
-            {videoCall ? 
-                <>
-                    <View>
-                        <Text style={{color:'black'}}> y : {data?data.roll:null} </Text>
-                        <Text style={{color:'black'}}> z : {data?data.yaw:null} </Text>
-                    </View>
-                    <AgoraUIKit rtcProps={rtcProps} callbacks={callbacks} /> 
-                </>
-                : 
-                <View style={{flex:1 , justifyContent:'center' , marginHorizontal:30}}>
-                    <View
-                        style={{alignItems:'center'}}>
-                            <Text style={{fontSize:12 , color:'black'}}>Share ID with others to join this Call</Text>
-                            <Text style={{fontSize:16, color:'black', marginVertical:10}}>{rtcProps.appId}</Text>
+      <View style={{flex:1}}> 
 
-                            <TouchableOpacity 
-                                style={{width:'60%', height:80, marginVertical:20,  alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black'}}
-                                onPress={()=>setVideoCall(true)}
-                                >
-                                <Text style={{color:'black', fontSize:20}}>Start Call</Text>
-                            </TouchableOpacity>
-  
-                    </View>
-                </View>
-            }
-        </View>
+      {callOption ? 
         
-    )
+        callOption==='join' ? 
+          <View style={{flex:1 , justifyContent:'center' , marginHorizontal:30}}>
+            <View
+              style={{alignItems:'center'}}>
+                <TextInput
+                  style={{width:'80%', height: 45, marginVertical:10, paddingHorizontal:10, textAlign:'center', borderColor: 'black', borderWidth: 1,
+                  color:'black'}}
+                  placeholder="Please type ID to Join the Call"
+                  onChangeText={(text)=>{setCallID(text)}}
+                />
+
+                <TouchableOpacity 
+                    style={{width:'60%', height:80, marginVertical:20,  alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black'}}
+                    onPress={()=>checkId(callID)}
+                    >
+                    <Text style={{color:'black', fontSize:20}}>Join Call</Text>
+                </TouchableOpacity>
+
+            </View>
+          </View>
+
+          :
+
+          videoCall ? 
+            <>
+              <AgoraUIKit rtcProps={rtcProps} callbacks={callbacks} /> 
+            </>
+
+            :
+
+            <View style={{flex:1 , justifyContent:'center' , marginHorizontal:30}}>
+              <View
+                  style={{alignItems:'center'}}>
+                      <Text style={{fontSize:12 , color:'black'}}>Share ID with others to join this Call</Text>
+                      <Text style={{fontSize:16, color:'black', marginVertical:10}}>{rtcProps.appId}</Text>
+
+                      <TouchableOpacity 
+                          style={{width:'60%', height:80, marginVertical:20,  alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black'}}
+                          onPress={()=>setVideoCall(true)}
+                          >
+                          <Text style={{color:'black', fontSize:20}}>Start Call</Text>
+                      </TouchableOpacity>
+
+              </View>
+            </View>
+      
+        :
+        
+        <View style={{flex:1 , justifyContent:'center' , marginHorizontal:30}}>
+          <View
+              style={{alignItems:'center'}}>
+
+                <TouchableOpacity 
+                    style={{width:'60%', height:80, marginVertical:20,  alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black'}}
+                    onPress={()=>setCallOption('join')}
+                    >
+                    <Text style={{color:'black', fontSize:20}}>Join Call</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                    style={{width:'60%', height:80, marginVertical:20,  alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black'}}
+                    onPress={()=>setCallOption('create')}
+                    >
+                    <Text style={{color:'black', fontSize:20}}>Create Call</Text>
+                </TouchableOpacity>
+
+            </View>
+        </View>
+          
+      }
+      
+    </View>
+  );
 }
 
 

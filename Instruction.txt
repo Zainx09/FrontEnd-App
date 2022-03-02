@@ -8,6 +8,7 @@ Run instructions for Android:
 npm i @react-native-community/cli-platform-android
 
 
+
 //for reanimation works go to
 /android/app/build.gradle
 make this line true
