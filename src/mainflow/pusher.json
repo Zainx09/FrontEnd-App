@@ -4,5 +4,5 @@
     "secret":"efcb874b3bc33a24d5a7",
     "cluster":"ap2",
     "encrypted":true,
-    "restServer":" http://2273-39-50-170-100.ngrok.io"
+    "restServer":"https://8a66-116-90-101-44.ngrok.io"
 }

@@ -90,10 +90,4 @@ npm i mathjs
 
 
 ///Bluetooth Stuff
-npm install react-native-bluetooth-classic --save
-
-npm i @ionic-native/bluetooth-serial
-
-
-
 npm i react-native-bluetooth-serial-2

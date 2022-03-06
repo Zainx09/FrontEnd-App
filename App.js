@@ -82,7 +82,7 @@ export default function App(){
             screenOptions={{
             headerShown: false
             }}>
-              <Stack.Screen name="BluetoothTest" component={BluetoothTest} />
+              {/* <Stack.Screen name="BluetoothTest" component={BluetoothTest} /> */}
 
               <Stack.Screen name="SplashScreen" component={SplashScreen} />
 

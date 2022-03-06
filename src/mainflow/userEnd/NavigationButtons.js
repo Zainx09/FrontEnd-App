@@ -6,25 +6,25 @@ import { StyleSheet, Text, View, TextInput, FlatList, KeyboardAvoidingView, Butt
 
 export default function NavigationButtons(props){
   
-  const [up , setUp] = useState('')
-  const [down , setDown] = useState('')
+  const [go , setGo] = useState('')
+  const [back , setBack] = useState('')
   const [left , setLeft] = useState('')
   const [right , setRight] = useState('')
   // const inputRef = useRef(null);
 
   const onSendMessage=(button , text)=>{ // (1)
 
-    if (button==='up'){
+    if (button==='go'){
 
-      if (text !== up){
-        setUp(text);
+      if (text !== go){
+        setGo(text);
         props.onSendMessage(text)
       }
 
-    }else if (button==='down'){
+    }else if (button==='back'){
 
-      if (text !== down){
-        setDown(text);
+      if (text !== back){
+        setBack(text);
         props.onSendMessage(text)
       }
 
@@ -51,10 +51,12 @@ export default function NavigationButtons(props){
  
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding">
-    
-
-      <View style={[styles.Navigation , {flexDirection:'column' , alignItems:'center' , justifyContent:'center'}]}>
-        <TouchableOpacity onPressIn={()=>onSendMessage('left', 'LEFT IN')} onPressOut={()=>onSendMessage('left', 'LEFT OUT')}>
+      
+      <View style={styles.Navigation}>
+        <TouchableOpacity 
+          style={{width:'100%', height:'100%', flexDirection:'column' , alignItems:'center' , justifyContent:'center'}}
+          onPressIn={()=>onSendMessage('left', 'LEFT IN')} 
+          onPressOut={()=>onSendMessage('left', 'LEFT OUT')}>
           <Text style={{color:'black'}}>LEFT</Text>
         </TouchableOpacity>
       </View>
@@ -62,23 +64,29 @@ export default function NavigationButtons(props){
       <View style={[styles.Navigation , {flexDirection:'column'}]}>
           <TouchableOpacity 
             style={{height:'50%', width:'100%', justifyContent:'center' , borderWidth:1 , alignItems:'center'}}
-            onPressIn={()=>onSendMessage('up', 'UP IN')} onPressOut={()=>onSendMessage('up', 'UP OUT')}>
-            <Text style={{color:'black'}}>UP</Text>
+            onPressIn={()=>onSendMessage('go', 'GO IN')} 
+            onPressOut={()=>onSendMessage('go', 'GO OUT')}>
+            <Text style={{color:'black'}}>GO</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
             style={{height:'50%', width:'100%', justifyContent:'center' , borderWidth:1 , alignItems:'center'}}
-            onPressIn={()=>onSendMessage('down', 'DOWN IN')} onPressOut={()=>onSendMessage('down', 'DOWN OUT')}>
-            <Text style={{color:'black'}}>DOWN</Text>
+            onPressIn={()=>onSendMessage('back', 'BACK IN')} 
+            onPressOut={()=>onSendMessage('back', 'BACK OUT')}>
+            <Text style={{color:'black'}}>BACK</Text>
           </TouchableOpacity>
       </View>
 
-      <View style={[styles.Navigation , {flexDirection:'column' , alignItems:'center' , justifyContent:'center'}]}>
-          <TouchableOpacity onPressIn={()=>onSendMessage('right', 'RIGHT IN')} onPressOut={()=>onSendMessage('right', 'RIGHT OUT')}>
+      <View style={styles.Navigation}>
+          <TouchableOpacity 
+            style={{width:'100%' , height:'100%', flexDirection:'column' , alignItems:'center' , justifyContent:'center'}} 
+            onPressIn={()=>onSendMessage('right', 'RIGHT IN')} 
+            onPressOut={()=>onSendMessage('right', 'RIGHT OUT')}>
             <Text style={{color:'black'}}>RIGHT</Text>
           </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
+
   );
 
 
@@ -106,7 +114,7 @@ const styles = StyleSheet.create({
     borderWidth:2,  
   },
   Navigation:{
-    width:'32%'
+    width:'35%'
   },
   messages: {
     alignSelf: 'stretch'

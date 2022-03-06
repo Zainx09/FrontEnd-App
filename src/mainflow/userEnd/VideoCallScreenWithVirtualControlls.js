@@ -12,7 +12,6 @@ import Pusher from 'pusher-js/react-native';
 import pusherConfig from '../pusher.json';
 import AgoraUIKit from 'agora-rn-uikit';
 
-import NavigationButtons from './NavigationButtons';
 
 import { setUpdateIntervalForType, SensorTypes, accelerometer ,gyroscope, orientation  } from "react-native-sensors";
 
@@ -118,6 +117,7 @@ export default function VideoCallScreenWithVirtualControlls({navigation}){
       setUpdateIntervalForType(SensorTypes.orientation  , 500);
     },[]);
 
+    
 
     useEffect(() => {
 

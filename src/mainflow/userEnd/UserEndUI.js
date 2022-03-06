@@ -14,13 +14,15 @@ export default function UserEndUI({navigation}){
     if(screen === 'VideoCallScreen'){
         navigation.navigate('VideoCallScreen')
 
-    }else if(screen === 'VideoCallScreenWithControlls'){
+    } else if(screen === 'VideoCallScreenWithControlls'){
         navigation.navigate('VideoCallScreenWithControlls')
-
+        
     }else if(screen === 'VideoCallScreenWithVirtualControlls'){
       navigation.navigate('VideoCallScreenWithVirtualControlls')
 
   }
+   
+    
   }
 
   return (
