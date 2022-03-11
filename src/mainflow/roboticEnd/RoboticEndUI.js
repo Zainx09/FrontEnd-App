@@ -11,6 +11,12 @@ import pusherConfig from '../pusher.json';
 
 import BluetoothSerial from 'react-native-bluetooth-serial-2'
 
+import Ably from "ably";
+
+const ably = new Ably.Realtime('4WmoOg.4SZS1g:w84M-soVmVHhJSbjdeEryB9MYYMIQ3WZSJVnEdMOsu4');
+const channel = ably.channels.get('ABLY'); // for movement
+const channel2 = ably.channels.get('ABLY2'); // for angles
+
 
 export default function RoboticEndUI(){
 
@@ -42,89 +48,159 @@ export default function RoboticEndUI(){
 
 
   ///////////////// Pusher API /////////////////////////
-  useEffect(() => {
-    const pusher = new Pusher(pusherConfig.key, pusherConfig); // (1)
-    const chatChannel = pusher.subscribe('chat_channel'); // (2)
-    chatChannel.bind('pusher:subscription_succeeded', () => { // (3)
-      chatChannel.bind('join', (data) => { // (4)
-        handleJoin(data.name);
-      });
-      chatChannel.bind('part', (data) => { // (5)
-        handlePart(data.name);
-      });
-      chatChannel.bind('message', (data) => { // (6)
-        handleMessage(data.name, data.message);
-      });
+  // useEffect(() => {
+  //   const pusher = new Pusher(pusherConfig.key, pusherConfig); // (1)
+  //   const chatChannel = pusher.subscribe('chat_channel'); // (2)
+  //   chatChannel.bind('pusher:subscription_succeeded', () => { // (3)
+  //     chatChannel.bind('join', (data) => { // (4)
+  //       handleJoin(data.name);
+  //     });
+  //     chatChannel.bind('part', (data) => { // (5)
+  //       handlePart(data.name);
+  //     });
+  //     chatChannel.bind('message', (data) => { // (6)
+  //       handleMessage(data.name, data.message);
+  //     });
+  //   });
+
+  //   // Anything in here is fired on component mount.
+  //   fetch(`${pusherConfig.restServer}/users/${'zain'}`, {
+  //     method: 'PUT'
+  //   });
+
+  //   // return () => {
+  //   //   // Anything in here is fired on component unmount.
+  //   //   fetch(`${pusherConfig.restServer}/users/${'zain'}`, {
+  //   //       method: 'DELETE'
+  //   //   });
+  //   // }
+
+  //   return(()=>{
+  //     chatChannel.unsubscribe('chat_channel');
+  //   })
+
+  // }, []);
+
+
+  // const handleJoin=(name)=>{ 
+  //   setMessages({action: 'join', name: name, message: 'Connected'})
+  // }
+    
+  // const handlePart=(name)=>{
+  //   setMessages({action: 'part', name: name , message: 'Disconnected'})
+  // }
+   
+  // const handleMessage=(name, message)=>{
+  //   switch(message) {
+  //     case "LEFT IN":
+  //       write_data('L')
+  //       setMessages({action: 'message', name: name, message: message})
+  //       break;
+
+  //     case "RIGHT IN":
+  //       write_data('R')
+  //       setMessages({action: 'message', name: name, message: message})
+  //       break;
+
+  //     case "GO IN":
+  //       write_data('F')
+  //       setMessages({action: 'message', name: name, message: message})
+  //       break;
+
+  //     case "BACK IN":
+  //       write_data('B')
+  //       setMessages({action: 'message', name: name, message: message})
+  //       break;
+
+  //       case "LEFT OUT":
+  //         write_data('C')
+  //         setMessages({action: 'message', name: name, message: message})
+  //         break;
+  
+  //       case "RIGHT OUT":
+  //         write_data('C')
+  //         setMessages({action: 'message', name: name, message: message})
+  //         break;
+  
+  //       case "GO OUT":
+  //         write_data('C')
+  //         setMessages({action: 'message', name: name, message: message})
+  //         break;
+  
+  //       case "BACK OUT":
+  //         write_data('C')
+  //         setMessages({action: 'message', name: name, message: message})
+  //         break;
+
+  //     default:
+  //       // write_data('C');
+  //       break
+  //   }
+  //   // write_data()
+    
+  // } 
+
+  ///////////////// Pusher API /////////////////////////
+
+
+  ////////////////// ABLY API ///////////////////////////
+
+  const [message , setMessage] = useState('');
+
+  const [y ,setY] = useState('');
+  const [z ,setZ] = useState('');
+  const [angle , setAngles] = useState('');
+
+  useEffect(()=>{
+
+    channel.subscribe('MyCommand' , (message)=>{
+      handleMessage(message.data)
     });
 
-    // Anything in here is fired on component mount.
-    fetch(`${pusherConfig.restServer}/users/${'zain'}`, {
-      method: 'PUT'
+    channel2.subscribe('MyAngles' , (angle)=>{
+      handleAngle(angle.data)
     });
-
-    // return () => {
-    //   // Anything in here is fired on component unmount.
-    //   fetch(`${pusherConfig.restServer}/users/${'zain'}`, {
-    //       method: 'DELETE'
-    //   });
-    // }
 
     return(()=>{
-      chatChannel.unsubscribe('chat_channel');
+      channel.unsubscribe('MyCommand');
+      channel2.unsubscribe('MyAngles');
     })
+  },[]);
 
-  }, []);
-
-
-  const handleJoin=(name)=>{ 
-    setMessages({action: 'join', name: name, message: 'Connected'})
-  }
-    
-  const handlePart=(name)=>{
-    setMessages({action: 'part', name: name , message: 'Disconnected'})
-  }
-   
-  const handleMessage=(name, message)=>{
+  const handleMessage=(message)=>{
+    setMessage(message)
     switch(message) {
       case "LEFT IN":
         write_data('L')
-        setMessages({action: 'message', name: name, message: message})
         break;
 
       case "RIGHT IN":
         write_data('R')
-        setMessages({action: 'message', name: name, message: message})
         break;
 
       case "GO IN":
         write_data('F')
-        setMessages({action: 'message', name: name, message: message})
         break;
 
       case "BACK IN":
         write_data('B')
-        setMessages({action: 'message', name: name, message: message})
         break;
 
-        case "LEFT OUT":
-          write_data('C')
-          setMessages({action: 'message', name: name, message: message})
-          break;
-  
-        case "RIGHT OUT":
-          write_data('C')
-          setMessages({action: 'message', name: name, message: message})
-          break;
-  
-        case "GO OUT":
-          write_data('C')
-          setMessages({action: 'message', name: name, message: message})
-          break;
-  
-        case "BACK OUT":
-          write_data('C')
-          setMessages({action: 'message', name: name, message: message})
-          break;
+      case "LEFT OUT":
+        write_data('C')
+        break;
+
+      case "RIGHT OUT":
+        write_data('C')
+        break;
+
+      case "GO OUT":
+        write_data('C')
+        break;
+
+      case "BACK OUT":
+        write_data('C')
+        break;
 
       default:
         // write_data('C');
@@ -134,7 +210,71 @@ export default function RoboticEndUI(){
     
   } 
 
-  ///////////////// Pusher API /////////////////////////
+  // z axis = 18 letters.
+  // y axis = 12 letters.
+  const handleAngle=(angle)=>{
+    
+    setY(angle.split(" ")[0]);
+    setZ(angle.split(" ")[1]);
+    // setAngles(angle)
+
+    switch(angle.split(" ")[0]) {
+      case "25":
+        write_data('a')
+        break;
+
+      case "35":
+        write_data('b')
+        break;
+
+      case "45":
+        write_data('c')
+        break;
+
+      case "55":
+        write_data('d')
+        break;
+
+      case "65":
+        write_data('e')
+        break;
+
+      case "75":
+        write_data('f')
+        break;
+
+      case "85":
+        write_data('g')
+        break;
+
+      case "95":
+        write_data('h')
+        break;
+
+      case "105":
+        write_data('i')
+        break;
+    
+      case "115":
+        write_data('j')
+        break;
+
+      case "125":
+        write_data('k')
+        break;
+
+      case "135":
+        write_data('l')
+        break;
+
+      default:
+        // write_data('C');
+        break
+      }
+  }
+
+
+  ////////////////// ABLY API ///////////////////////////
 
 
   ////////////////// Bluetooth Code ////////////////////
@@ -176,8 +316,8 @@ export default function RoboticEndUI(){
       
     }catch(err){
       setConnected(false);
-      // showToastWithGravity('Error ------ ' , err.message)
-      console.log('Error ------ ' , err)
+      showToastWithGravity(err.message)
+      // console.log('Error ------ ' , err)
       
     }
     
@@ -194,7 +334,7 @@ export default function RoboticEndUI(){
 
       try{
         await BluetoothSerial.write(key);
-        console.log("Writed");
+        // console.log("Writed");
       }catch(err){
         setConnected(false);
         // showToastWithGravity(err.message);
@@ -261,10 +401,13 @@ export default function RoboticEndUI(){
 
         videoCall ? 
           <View style={{flex:1 , flexDirection:'column'}}>
-            <View style={{height:'10%' , backgroundColor:'white'}}>
-              <Text style={{color:'black'}}> {messages.message} </Text>
+            <View style={{height:'12%' , backgroundColor:'white'}}>
+              {/* <Text style={{color:'black'}}> {messages.message} </Text> */}
+              <Text style={{color:'black'}}>{message} </Text>
+              <Text style={{color:'black'}}>{y} </Text>
+              <Text style={{color:'black'}}>{z} </Text>
             </View>
-            <View style={{height:'90%'}}>
+            <View style={{height:'88%'}}>
               <AgoraUIKit rtcProps={rtcProps} callbacks={callbacks} /> 
             </View>
           </View>
@@ -294,32 +437,125 @@ export default function RoboticEndUI(){
             style={{alignItems:'center'}}>
 
               <TouchableOpacity 
-                  style={{width:'60%', height:80, marginVertical:20,  alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black'}}
+                  style={{width:'80%', height:60, marginVertical:20,  alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black'}}
                   onPress={()=>setCallOption('join')}
                   >
-                  <Text style={{color:'black', fontSize:20}}>Join Call</Text>
+                  <Text style={{color:'black', fontSize:15}}>Join Call</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
-                  style={{width:'60%', height:80, marginVertical:20,  alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black'}}
+                  style={{width:'80%', height:60, marginVertical:20,  alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black'}}
                   onPress={()=>setCallOption('create')}
                   >
-                  <Text style={{color:'black', fontSize:20}}>Create Call</Text>
+                  <Text style={{color:'black', fontSize:15}}>Create Call</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
-                  style={{width:'60%', height:80, marginVertical:20,  alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black' , backgroundColor:'lightblue'}}
+                  style={{width:'80%', height:60, marginVertical:20,  alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black' , backgroundColor:'lightblue'}}
                   onPress={()=>connect_Bt()}
                   >
-                  <Text style={{color:'black', fontSize:20}}>Connect Bluetooth</Text>
+                  <Text style={{color:'black', fontSize:15}}>Connect Bluetooth</Text>
+              </TouchableOpacity>
+
+              {/* {connected 
+                && 
+                <View>
+
+                </View>
+                
+              } */}
+
+              {connected 
+                && 
+              <>
+              
+              <Text style={{color:'black', fontSize:15}}>
+                Test Robot Movements
+              </Text>
+
+              <View style={{width:'100%' , height:60 , flexDirection:'row' , justifyContent:'space-evenly'}}>
+
+                <TouchableOpacity 
+                    style={{width:'20%', height:'100%',alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black' , backgroundColor:'yellow'}}
+                    onPressIn={()=>write_data('F')} onPressOut={()=>write_data("C")}
+                    >
+                    <Text style={{color:'black', fontSize:11}}>GO</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                    style={{width:'20%', height:'100%',alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black' , backgroundColor:'yellow'}}
+                    onPressIn={()=>write_data('B')} onPressOut={()=>write_data("C")}
+                    >
+                    <Text style={{color:'black', fontSize:11}}>BACK</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                    style={{width:'20%', height:'100%',alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black' , backgroundColor:'yellow'}}
+                    onPressIn={()=>write_data('L')} onPressOut={()=>write_data("C")}
+                    >
+                    <Text style={{color:'black', fontSize:11}}>LEFT</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                    style={{width:'20%', height:'100%',alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black' , backgroundColor:'yellow'}}
+                    onPressIn={()=>write_data('FR')} onPressOut={()=>write_data("C")}
+                    >
+                    <Text style={{color:'black', fontSize:11}}>RIGHT</Text>
+                </TouchableOpacity>
+
+              </View>
+
+              <Text style={{color:'black', fontSize:15 , marginTop:20}}>
+                Test Head Rotation
+              </Text>
+
+              <View style={{width:'100%' , height:60 , flexDirection:'row' , justifyContent:'space-evenly'}}>
+
+                <TouchableOpacity 
+                    style={{width:'20%', height:'100%',alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black' , backgroundColor:'grey'}}
+                    onPressIn={()=>write_data('a')} onPressOut={()=>write_data("C")}
+                    >
+                    <Text style={{color:'black', fontSize:11}}>UP</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                    style={{width:'20%', height:'100%',alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black' , backgroundColor:'grey'}}
+                    onPressIn={()=>write_data('l')} onPressOut={()=>write_data("C")}
+                    >
+                    <Text style={{color:'black', fontSize:11}}>DOWN</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                    style={{width:'20%', height:'100%',alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black' , backgroundColor:'grey'}}
+                    onPressIn={()=>write_data('a')} onPressOut={()=>write_data("C")}
+                    >
+                    <Text style={{color:'black', fontSize:11}}>LEFT</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                    style={{width:'20%', height:'100%',alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black' , backgroundColor:'grey'}}
+                    onPressIn={()=>write_data('l')} onPressOut={()=>write_data("C")}
+                    >
+                    <Text style={{color:'black', fontSize:11}}>RIGHT</Text>
+                </TouchableOpacity>
+
+              </View>
+              </>}
+
+
+              {/* <TouchableOpacity 
+                  style={{width:'60%', height:80, marginVertical:20,  alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black' , backgroundColor:'green'}}
+                  onPressIn={()=>write_data('F')} onPressOut={()=>write_data("C")}
+                  >
+                  <Text style={{color:'black', fontSize:15}}>Check Forward Drive</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
                   style={{width:'60%', height:80, marginVertical:20,  alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black' , backgroundColor:'green'}}
-                  onPressIn={()=>write_data('F')} onPressOut={()=>write_data("C")}
+                  onPressIn={()=>write_data('a')} onPressOut={()=>write_data("l")}
                   >
-                  <Text style={{color:'black', fontSize:15}}>Test Bluetooth</Text>
-              </TouchableOpacity>
+                  <Text style={{color:'black', fontSize:15}}>Check Servo Angles</Text>
+              </TouchableOpacity> */}
 
           </View>
       </View>

@@ -13,10 +13,17 @@ import Pusher from 'pusher-js/react-native';
 import pusherConfig from '../pusher.json';
 import AgoraUIKit from 'agora-rn-uikit';
 
+
+
 import NavigationButtons from './NavigationButtons';
 
 import { setUpdateIntervalForType, SensorTypes, accelerometer ,gyroscope, orientation  } from "react-native-sensors";
 
+import Ably from "ably";
+
+const ably = new Ably.Realtime('4WmoOg.4SZS1g:w84M-soVmVHhJSbjdeEryB9MYYMIQ3WZSJVnEdMOsu4');
+const channel = ably.channels.get('ABLY');
+const channel2 = ably.channels.get('ABLY2');
 
 const windowHeight = Dimensions.get('window').height;
 
@@ -93,9 +100,10 @@ export default function VideoCallScreenWithControlls({navigation}){
             if (data.roll === getAngle('roll',euler.roll) && data.yaw === getAngle('yaw',euler.yaw)){
                 return null
             }else{
-                const txt = 'y = '+ getAngle('roll',euler.roll) + " z = " + getAngle('yaw',euler.yaw)
+                // const txt = 'y = '+ getAngle('roll',euler.roll) + " z = " + getAngle('yaw',euler.yaw)
+                const txt = getAngle('roll',euler.roll) + " " + getAngle('yaw',euler.yaw)
                 // console.log('change')
-                onSendMessage(txt);
+                sendAngle(txt);
             }
           }
         }
@@ -114,70 +122,92 @@ export default function VideoCallScreenWithControlls({navigation}){
 
 
     ///////////////// Pusher API /////////////////////////
-    const [messages , setMessages] = useState('')
+    // const [messages , setMessages] = useState('')
 
-    useEffect(() => {        
+    // useEffect(() => {        
 
-        const pusher = new Pusher(pusherConfig.key, pusherConfig); // (1)
-        const chatChannel = pusher.subscribe('chat_channel'); // (2)
-        chatChannel.bind('pusher:subscription_succeeded', () => { // (3)
-        chatChannel.bind('join', (data) => { // (4)
-            handleJoin(data.name);
-        });
-        // chatChannel.bind('part', (data) => { // (5)
-        //     handlePart(data.name);
-        // });
-        // chatChannel.bind('message', (data) => { // (6)
-        //     handleMessage(data.name, data.message);
-        // });
-        });
+    //     const pusher = new Pusher(pusherConfig.key, pusherConfig); // (1)
+    //     const chatChannel = pusher.subscribe('chat_channel'); // (2)
+    //     chatChannel.bind('pusher:subscription_succeeded', () => { // (3)
+    //     chatChannel.bind('join', (data) => { // (4)
+    //         handleJoin(data.name);
+    //     });
+    //     // chatChannel.bind('part', (data) => { // (5)
+    //     //     handlePart(data.name);
+    //     // });
+    //     // chatChannel.bind('message', (data) => { // (6)
+    //     //     handleMessage(data.name, data.message);
+    //     // });
+    //     });
 
-        fetch(`${pusherConfig.restServer}/users/${'zain'}`, {
-        method: 'PUT'
-        });
+    //     fetch(`${pusherConfig.restServer}/users/${'zain'}`, {
+    //     method: 'PUT'
+    //     });
 
-        // return () => {
-        //   setMessages('');
-        //   // Anything in here is fired on component unmount.
-        //   fetch(`${pusherConfig.restServer}/users/${'zain'}`, {
-        //       method: 'DELETE'
-        //   });
-        // }
+    //     // return () => {
+    //     //   setMessages('');
+    //     //   // Anything in here is fired on component unmount.
+    //     //   fetch(`${pusherConfig.restServer}/users/${'zain'}`, {
+    //     //       method: 'DELETE'
+    //     //   });
+    //     // }
 
-        return(()=>{
-          chatChannel.unsubscribe('chat_channel');
-        })
+    //     return(()=>{
+    //       chatChannel.unsubscribe('chat_channel');
+    //     })
         
 
-    }, []);
+    // }, []);
 
 
-    const handleJoin=(name)=>{ 
-        setMessages({action: 'join', name: name, message: 'Connected'})
-    }
+    // const handleJoin=(name)=>{ 
+    //     setMessages({action: 'join', name: name, message: 'Connected'})
+    // }
         
-    const handlePart=(name)=>{
-        setMessages({action: 'part', name: name , message: 'Disconnected'})
-    }
+    // const handlePart=(name)=>{
+    //     setMessages({action: 'part', name: name , message: 'Disconnected'})
+    // }
     
-    const handleMessage=(name, message)=>{
-        setMessages({action: 'message', name: name, message: message})
-    } 
+    // const handleMessage=(name, message)=>{
+    //     setMessages({action: 'message', name: name, message: message})
+    // } 
 
 
-    const onSendMessage=(text)=>{ // (9)
-        const payload = {
-            message: text
-        };
-        fetch(`${pusherConfig.restServer}/users/${'zain'}/messages`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-        });
-    }
+    // const onSendMessage=(text)=>{ // (9)
+    //     const payload = {
+    //         message: text
+    //     };
+    //     fetch(`${pusherConfig.restServer}/users/${'zain'}/messages`, {
+    //     method: 'POST',
+    //     headers: {
+    //         'Content-Type': 'application/json'
+    //     },
+    //     body: JSON.stringify(payload)
+    //     });
+    // }
     ///////////////// Pusher API /////////////////////////
+
+
+    ////////////////// ABLY API ///////////////////////////
+
+    ///// For Vanigations
+    const onSendMessage=(text)=>{ // (9)
+        // const payload = {
+        //     message: text
+        // };
+        channel.publish('MyCommand', text);
+    }
+
+
+    ////// For Angles
+    const sendAngle=(text)=>{ // (9)
+      // const payload = {
+      //     message: text
+      // };
+      channel2.publish('MyAngles', text);
+  }
+
+    ////////////////// ABLY API ///////////////////////////
 
     return(
 
@@ -217,7 +247,8 @@ export default function VideoCallScreenWithControlls({navigation}){
                 </View>
 
                 <View style={{height:buttonsHeight}}>
-                    <NavigationButtons messages={ messages } onSendMessage={ onSendMessage } />
+                    {/* <NavigationButtons messages={ messages } onSendMessage={ onSendMessage } /> */}
+                    <NavigationButtons onSendMessage={ onSendMessage } />
                 </View>
 
             </View>
@@ -293,12 +324,12 @@ export default function VideoCallScreenWithControlls({navigation}){
 function getAngle(type , angle){
 
     if(type === 'roll'){
-      if (angle > 160){
-        return 155
+      if (angle > 140){
+        return 135
       }else if(angle > -90 && angle < 20){
         return 25
       }else if(angle < -90){
-        return 155
+        return 135
       }
   
     }else if(type === 'yaw'){

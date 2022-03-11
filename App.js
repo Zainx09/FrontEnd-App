@@ -66,7 +66,7 @@ import VideoCallScreenWithVirtualControlls from './src/mainflow/userEnd/VideoCal
 
 import RoboticEndUI from "./src/mainflow/roboticEnd/RoboticEndUI"
 
-import BluetoothTest from './src/Bluetooth/BluetoothTest';
+import WebSocketScreen from './src/webSocket/WebSocket'
 
 const Stack = createNativeStackNavigator();
 
@@ -82,13 +82,12 @@ export default function App(){
             screenOptions={{
             headerShown: false
             }}>
-              {/* <Stack.Screen name="BluetoothTest" component={BluetoothTest} /> */}
+              {/* <Stack.Screen name="WebSocketScreen" component={WebSocketScreen} /> */}
 
-              <Stack.Screen name="SplashScreen" component={SplashScreen} />
+              {/* <Stack.Screen name="SplashScreen" component={SplashScreen} />
 
-              {/* <Stack.Screen name="SignUpFlow" component={SignUpFlow} /> */}
               <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
-              <Stack.Screen name="SignInScreen" component={SignInScreen} />
+              <Stack.Screen name="SignInScreen" component={SignInScreen} /> */}
 
               {/* <Stack.Screen name="MainFlow" component={MainFlow} /> */}
               {/* <Stack.Screen name="MainScreen" component={MainScreen} /> */}
@@ -97,6 +96,7 @@ export default function App(){
               <Stack.Screen name="VideoCallScreen" component={VideoCallScreen} />
               <Stack.Screen name="VideoCallScreenWithControlls" component={VideoCallScreenWithControlls} />
               <Stack.Screen name="VideoCallScreenWithVirtualControlls" component={VideoCallScreenWithVirtualControlls} />
+              
               <Stack.Screen name="RoboticEndScreen" component={RoboticEndUI} />
               
             

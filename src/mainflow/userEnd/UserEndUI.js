@@ -31,26 +31,26 @@ export default function UserEndUI({navigation}){
         <Text style={{color:'black'}}>Select Calling Option</Text>
 
         <TouchableOpacity 
-          style={{width:'60%', height:100, alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black'}}
+          style={{width:'80%', height:80, alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black'}}
           onPress={()=>{goToScreen('VideoCallScreen')}}
           >
-          <Text style={{color:'black', fontSize:20}}>Only Video Call</Text>
+          <Text style={{color:'black', fontSize:15}}>Without Navigation</Text>
         </TouchableOpacity>
 
 
         <TouchableOpacity 
-        style={{width:'60%', height:100, alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black'}}
+        style={{width:'80%', height:80, alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black'}}
         onPress={()=>{goToScreen('VideoCallScreenWithControlls')}}
         >
-          <Text style={{color:'black', fontSize:20}}>With Navigation</Text>
+          <Text style={{color:'black', fontSize:15}}>With Navigation</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity 
+        {/* <TouchableOpacity 
         style={{width:'60%', height:100, alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black'}}
         onPress={()=>{goToScreen('VideoCallScreenWithVirtualControlls')}}
         >
           <Text style={{color:'black', fontSize:20}}>With Virtual Navigation</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
           
       </View>
 
