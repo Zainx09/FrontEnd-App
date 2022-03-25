@@ -94,6 +94,7 @@ npm i react-native-bluetooth-serial-2
 
 
 //WebSocket
-npm i react-native-websocket
-
 npm i ably
+
+//icons
+npm i react-icons

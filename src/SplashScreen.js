@@ -11,8 +11,8 @@ import {StackActions} from '@react-navigation/native';
 import Api from './api/Api'
 
 
-import MainFlow from './mainflow/MainFlow';
-import SignUpFlow from './signupflow/SignUpFlow';
+// import MainFlow from './mainflow/MainFlow';
+// import SignUpFlow from './signupflow/SignUpFlow';
 
 export default function SplashScreen({navigation}){
 

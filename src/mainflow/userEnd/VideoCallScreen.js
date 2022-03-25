@@ -1,21 +1,26 @@
 import 'react-native-gesture-handler';
 
 import React from 'react';
-import { useState , useEffect} from 'react';
-import { StyleSheet, Text, View , TouchableOpacity , Dimensions , ToastAndroid} from 'react-native';
+import { useState , useEffect, useContext} from 'react';
+import { StyleSheet, Text, View , TouchableOpacity , TextInput, Dimensions , ToastAndroid, Clipboard, BackHandler, Alert} from 'react-native';
+import {StackActions} from '@react-navigation/native';
+
 import Pusher from 'pusher-js/react-native';
 
 import pusherConfig from '../pusher.json';
 import AgoraUIKit from 'agora-rn-uikit';
+import agoraConfig from "./AgorarChannels.json"
 
 import BluetoothSerial from 'react-native-bluetooth-serial-2'
 
 import Ably from "ably";
 
-const ably = new Ably.Realtime('4WmoOg.4SZS1g:w84M-soVmVHhJSbjdeEryB9MYYMIQ3WZSJVnEdMOsu4');
-const channel = ably.channels.get('ABLY'); // for movement
-const channel2 = ably.channels.get('ABLY2'); // for angles
-const channel3 = ably.channels.get('ABLY3'); // for joystick
+import { ChannelContext } from '../../../App';
+
+// const ably = new Ably.Realtime('4WmoOg.4SZS1g:w84M-soVmVHhJSbjdeEryB9MYYMIQ3WZSJVnEdMOsu4');
+// const channel = ably.channels.get('ABLY'); // for movement
+// const channel2 = ably.channels.get('ABLY2'); // for angles
+// const channel3 = ably.channels.get('ABLY3'); // for joystick
 
 
 const windowHeight = Dimensions.get('window').height;
@@ -25,189 +30,115 @@ const buttonsHeight = windowHeight*(20/100);
 
 export default function VideoCallScreen({navigation}){
 
+    ////////////////// ABLY API ///////////////////////////
+
+    const context = useContext(ChannelContext);
+
+
+      ///// For Navigations
+      const onSendMessage=(text)=>{
+        context.channel.publish('MyCommand', text);
+      }
+
+
+      ////// For Angles
+      const sendAngle=(text)=>{
+        context.channel2.publish('MyAngles', text);
+      }
+
+    ////////////////// ABLY API ///////////////////////////
+
+
+
+
+
     ///////////////// Video Call //////////////////////
     const [callOption , setCallOption] = useState(null);
     const [callID , setCallID] = useState('')
     const [videoCall, setVideoCall] = useState(false);
     const rtcProps = {
         appId: '72c2e0389a9e4beabcddc99e0d15a9d1',
-        token:'00672c2e0389a9e4beabcddc99e0d15a9d1IAC7zxeamP6oby+HLvHX/OmiBS00vydqNpcoCvDkeSJGOkOQEggAAAAAEACjt5mRq20mYgEAAQCpbSZi',
-        channel: 'myChannel'
+        token: agoraConfig.token,
+        channel: agoraConfig.channelName
     };
     const callbacks = {EndCall: () => setVideoCall(false)};
 
     function checkId(Id){
         if(Id === rtcProps.appId){
-        setVideoCall(true);
+          setVideoCall(true);
         }else{
-        alert('Please Type Correct ID.')
+          alert('Please Type Correct ID.')
         }
     }
+
+    const backAction = () => {
+
+      if(videoCall){
+        Alert.alert("","Exit Call?", [
+          {
+            text: "Cancel",
+            onPress: () => null,
+            style: "cancel"
+          },
+          { text: "YES", onPress: () => {
+            // BackHandler.exitApp()
+            // navigation.dispatch(
+            //       StackActions.replace('HomePageScreen'))
+            // navigation.navigate('UserEndScreen')
+            setVideoCall(false)
+          }}
+        ]);
+        return true;
+      }
+      return false;
+        
+    };
+  
+  
+    useEffect(() => {
+      
+        const backHandler = BackHandler.addEventListener(
+          "hardwareBackPress",
+          backAction
+        );
+      
+      
+  
+      return () => backHandler.remove();
+    }, [videoCall]);
+
   ///////////////// Video Call //////////////////////
-
-
-  ////////////////// ABLY API ///////////////////////////
-
-//   const [message , setMessage] = useState('');
-
-//   const [y ,setY] = useState('');
-//   const [z ,setZ] = useState('');
-//   const [angle , setAngles] = useState('');
-
-//   useEffect(()=>{
-
-//     channel.subscribe('MyCommand' , (message)=>{
-//       handleMessage(message.data)
-//     });
-
-//     channel2.subscribe('MyAngles' , (angle)=>{
-//       handleAngle(angle.data)
-//     });
-
-//     return(()=>{
-//       channel.unsubscribe('MyCommand');
-//       channel2.unsubscribe('MyAngles');
-//     })
-//   },[]);
-
-//   const handleMessage=(message)=>{
-//     setMessage(message)
-//     switch(message) {
-//       case "LEFT IN":
-//         write_data('L')
-//         break;
-
-//       case "RIGHT IN":
-//         write_data('R')
-//         break;
-
-//       case "GO IN":
-//         write_data('F')
-//         break;
-
-//       case "BACK IN":
-//         write_data('B')
-//         break;
-
-//       case "LEFT OUT":
-//         write_data('C')
-//         break;
-
-//       case "RIGHT OUT":
-//         write_data('C')
-//         break;
-
-//       case "GO OUT":
-//         write_data('C')
-//         break;
-
-//       case "BACK OUT":
-//         write_data('C')
-//         break;
-
-//       default:
-//         // write_data('C');
-//         break
-//     }
-//     // write_data()
-    
-//   } 
-
-//   // z axis = 18 letters.
-//   // y axis = 12 letters.
-//   const handleAngle=(angle)=>{
-    
-//     setY(angle.split(" ")[0]);
-//     setZ(angle.split(" ")[1]);
-//     // setAngles(angle)
-
-//     switch(angle.split(" ")[0]) {
-//       case "25":
-//         write_data('a')
-//         break;
-
-//       case "35":
-//         write_data('b')
-//         break;
-
-//       case "45":
-//         write_data('c')
-//         break;
-
-//       case "55":
-//         write_data('d')
-//         break;
-
-//       case "65":
-//         write_data('e')
-//         break;
-
-//       case "75":
-//         write_data('f')
-//         break;
-
-//       case "85":
-//         write_data('g')
-//         break;
-
-//       case "95":
-//         write_data('h')
-//         break;
-
-//       case "105":
-//         write_data('i')
-//         break;
-    
-//       case "115":
-//         write_data('j')
-//         break;
-
-//       case "125":
-//         write_data('k')
-//         break;
-
-//       case "135":
-//         write_data('l')
-//         break;
-
-//       default:
-//         // write_data('C');
-//         break
-//       }
-//   }
-
-
-  ////////////////// ABLY API ///////////////////////////
 
 
 
   ////////////////// Bluetooth Code ////////////////////
 
   const [connected , setConnected] = useState(false);
-  const [ navigate , setNavigate ] = useState('');
-//   const [y ,setY] = useState('');
-//   const [z ,setZ] = useState('');
+
+  // const [navigate , setNavigate] = useState('');
+
+  let navigate = '';
 
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-        sendData();
-        }, 2000);
-        return () => clearInterval(interval);
-    }, []);
+  useEffect(() => {
+      const interval = setInterval(() => {
+      readData();
+      }, 500);
+      return () => clearInterval(interval);
+  }, []);
 
-    const sendData = ()=> {
-    // console.log('Sending data')
-    }
+    
  
 
   const showToastWithGravity = (msg) => {
     ToastAndroid.showWithGravity(
       msg,
       ToastAndroid.SHORT,
-      ToastAndroid.CENTER
+      ToastAndroid.BOTTOM
     );
   };
+
+  //address of joystick's bluetooth 00:18:E4:40:00:06
  
   async function connect_Bt(){
     try{
@@ -241,51 +172,68 @@ export default function VideoCallScreen({navigation}){
     }
     
   }
-  
 
-  async function write_data(key){
-    let check = BluetoothSerial.isConnected();
-    if (!check) {
-      // showToastWithGravity("Must be connected!!");
-      console.log("Must be connected!!");
+  async function readData(){
+    // let check = BluetoothSerial.isConnected();
+    if (!BluetoothSerial.isConnected()) {
+      showToastWithGravity("Must be connected!!");
       return
-    }else{
-
-      try{
-        await BluetoothSerial.write(key);
-        // console.log("Writed");
-      }catch(err){
-        setConnected(false);
-        // showToastWithGravity(err.message);
-        console.log(err.message)
-      }
-      
     }
     
-    //C=67
-    //F=70
-    //B=66
-    //L=76
-    //R=82
-    //U=85
-    //D=68
+    let data = await BluetoothSerial.readFromDevice();
 
-    //X=88
-    //Y=89
+    try{
+      let data = await BluetoothSerial.readFromDevice();
+
+      if(data){
       
-    // await BluetoothSerial.write(key)
-    // .then((res) => {
-    //  console.log("Writed");
-    // })
-    // .catch((err) => {
-    //   setConnected(false);
-    //   showToastWithGravity(err.message);
-    //   console.log(err.message)
-    // })
-  }
+        if(data == 'F'){
+          if(navigate !== 'F'){
+            console.log(data);
+            navigate = 'F';
+            onSendMessage('GO IN');
+          }
 
+        }else if (data == 'B'){
+          if(navigate !== 'B'){
+            console.log(data);
+            navigate = 'B';
+            onSendMessage('BACK IN');
+          }
 
+        }else if (data == 'L'){
+          if(navigate !== 'L'){
+            console.log(data);
+            navigate = 'L'
+            onSendMessage('LEFT IN');
+          }
+          
+        }else if (data == 'R'){
+          if(navigate !== 'R'){
+            console.log(data);
+            navigate = 'R'
+            onSendMessage('RIGHT IN');
+          }
+          
+        }else if (data == 'C'){
+          if(navigate !== 'C'){
+            console.log(data);
+            navigate = 'C'
+            onSendMessage('GO OUT');
+          }
+          
+        }
+      }
+      
+    }catch(err){
+      setConnected(false);
+      // showToastWithGravity(err.message);
+      console.log(err.message)
+    }
+    
+    }
 
+  ////////////////// Bluetooth Code ////////////////////
 
 
 
@@ -296,83 +244,84 @@ export default function VideoCallScreen({navigation}){
     {callOption ? 
       
       callOption==='join' ? 
-        <View style={{flex:1 , justifyContent:'center' , marginHorizontal:30}}>
-          <View
-            style={{alignItems:'center'}}>
-              <TextInput
-                style={{width:'80%', height: 45, marginVertical:10, paddingHorizontal:10, textAlign:'center', borderColor: 'black', borderWidth: 1,
-                color:'black'}}
-                placeholder="Please type ID to Join the Call"
-                onChangeText={(text)=>{setCallID(text)}}
-              />
+        <View style={{flex:1 , justifyContent:'center' ,alignItems:'center',  backgroundColor:'white'}}>
+          
+            <TextInput
+              style={{width:'85%', height:60, marginBottom:"10%", paddingHorizontal:10, textAlign:'center', borderColor: '#6e8aa1', borderWidth:4, borderRadius:10 ,color:'#848484', fontSize:14 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
+              placeholder="Please type ID to Join the Call"
+              placeholderTextColor = 'lightgray'
+              onChangeText={(text)=>{setCallID(text)}}
+            />
 
-              <TouchableOpacity 
-                  style={{width:'60%', height:80, marginVertical:20,  alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black'}}
-                  onPress={()=>checkId(callID)}
-                  >
-                  <Text style={{color:'black', fontSize:20}}>Join Call</Text>
-              </TouchableOpacity>
+            <TouchableOpacity 
+                style={[styles.buttonStyle1 , {height:80, width:'55%', borderWidth:4}]}
+                onPress={()=>checkId(callID)}
+                >
+                <Text style={{color:'#ececec' ,fontSize:20 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Join Call</Text>
+            </TouchableOpacity>
 
-          </View>
         </View>
 
         :
 
         videoCall ? 
           <View style={{flex:1 , flexDirection:'column'}}>
-            <View style={{height:'12%' , backgroundColor:'white'}}>
-              {/* <Text style={{color:'black'}}> {messages.message} </Text> */}
-              <Text style={{color:'black'}}>{navigate} </Text>
-            </View>
-            <View style={{height:'88%'}}>
+            <View>
               <AgoraUIKit rtcProps={rtcProps} callbacks={callbacks} /> 
             </View>
           </View>
           
           :
 
-          <View style={{flex:1 , justifyContent:'center' , marginHorizontal:30}}>
-            <View
-                style={{alignItems:'center'}}>
-                    <Text style={{fontSize:12 , color:'black'}}>Share ID with others to join this Call</Text>
-                    <Text style={{fontSize:16, color:'black', marginVertical:10}}>{rtcProps.appId}</Text>
+          <View style={{flex:1 , justifyContent:'center', alignItems:'center', backgroundColor:'white'}}>
 
-                    <TouchableOpacity 
-                        style={{width:'60%', height:80, marginVertical:20,  alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black'}}
-                        onPress={()=>setVideoCall(true)}
-                        >
-                        <Text style={{color:'black', fontSize:20}}>Start Call</Text>
-                    </TouchableOpacity>
+              <Text style={{color:'#373738' ,fontSize:20 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Share ID with others to join this Call</Text>
 
-            </View>
+              <TouchableOpacity 
+                onPress={() =>{
+                  Clipboard.setString(rtcProps.appId)
+                  showToastWithGravity("Copied!")
+                }}>
+                <Text style={{fontSize:19, color:'black', marginVertical:20, fontStyle:'italic'}}>{rtcProps.appId}</Text>
+              </TouchableOpacity>
+
+
+              <TouchableOpacity 
+                  style={[styles.buttonStyle1 , {width:'55%', borderWidth:4}]}
+                  onPress={()=>setVideoCall(true)}
+                  >
+                  <Text style={{color:'#ececec' ,fontSize:20 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Start Call</Text>
+              </TouchableOpacity>
+
           </View>
     
       :
       
-      <View style={{flex:1 , justifyContent:'center' , marginHorizontal:30}}>
-        <View
-            style={{alignItems:'center'}}>
+      <View style={{flex:1, alignItems:'center' , justifyContent:'space-evenly', backgroundColor:'white'}}>
+
+              <Text style={{color:'#848484', fontSize:20 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Without Navigation</Text>
 
               <TouchableOpacity 
-                  style={{width:'80%', height:60, marginVertical:20,  alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black'}}
+                  style={styles.buttonStyle}
                   onPress={()=>setCallOption('join')}
                   >
-                  <Text style={{color:'black', fontSize:15}}>Join Call</Text>
+                  <Text style={{color:'white', fontSize:17 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Join Call</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
-                  style={{width:'80%', height:60, marginVertical:20,  alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black'}}
+                  style={styles.buttonStyle}
                   onPress={()=>setCallOption('create')}
                   >
-                  <Text style={{color:'black', fontSize:15}}>Create Call</Text>
+                  <Text style={{color:'white', fontSize:17 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Create Call</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
-                  style={{width:'80%', height:60, marginVertical:20,  alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black' , backgroundColor:'lightblue'}}
+                  style={[styles.buttonStyle , {height:'14%'}]}
                   onPress={()=>connect_Bt()}
                   >
-                  <Text style={{color:'black', fontSize:15}}>Connect Controller</Text>
+                  <Text style={{color:'white', fontSize:17 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Connect Controller</Text>
               </TouchableOpacity>
+
 
 
               {/* <TouchableOpacity 
@@ -389,7 +338,6 @@ export default function VideoCallScreen({navigation}){
                   <Text style={{color:'black', fontSize:15}}>Check Servo Angles</Text>
               </TouchableOpacity> */}
 
-          </View>
       </View>
         
     }
@@ -397,3 +345,27 @@ export default function VideoCallScreen({navigation}){
         
     )
 }
+
+const styles = StyleSheet.create({
+
+  buttonStyle:{
+    width:'85%', 
+    height:'25%', 
+    alignItems:'center', 
+    justifyContent:'center', 
+    backgroundColor:'#a3c0e5', 
+    borderWidth:5,
+    borderColor:'#6e8aa1',
+    borderRadius:25
+  },
+  buttonStyle1:{
+    width:'85%', 
+    height:'12%', 
+    alignItems:'center', 
+    justifyContent:'center', 
+    backgroundColor:'#a3c0e5', 
+    borderWidth:6,
+    borderColor:'#6e8aa1',
+    borderRadius:20
+  }
+})

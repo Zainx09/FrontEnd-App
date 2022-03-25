@@ -26,6 +26,8 @@ const SignInScreen=({navigation})=>{
         try{
             console.log('Sent');
             if(email!=="" || password!==""){
+                // let email2 = email.toLowerCase();
+                
                 const response = await Api.post('/signin' , { email , password });
                 
                 await AsyncStorage.setItem('token', response.data.token)
@@ -54,15 +56,17 @@ const SignInScreen=({navigation})=>{
             <Text style={{marginBottom:10, alignSelf:'center', fontSize:20, fontWeight:'bold', color:'midnightblue'}}>Sign In</Text>
                 
                 <TextInput
-                style={styles.inputStyle}
+                    style={styles.inputStyle}
                     keyboardType="email-address"
                     placeholder="Email"
+                    placeholderTextColor = 'lightgray'
                     onChangeText={(text)=>{setEmail(text)}}
                     />
 
                 <TextInput
                     style={styles.inputStyle}
                     placeholder="Password"
+                    placeholderTextColor = 'lightgray'
                     secureTextEntry={true}
                     onChangeText={(text)=>{setPassword(text)}}
                     />

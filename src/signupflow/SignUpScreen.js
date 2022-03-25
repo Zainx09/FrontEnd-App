@@ -30,8 +30,10 @@ const SignUpScreen=({navigation})=>{
                 if(password.length>4){
                     if(password===rePassword){
 
+
                         try{
                             console.log('Sent');
+                            
                             const response = await Api.post('/signup' , { username , email , password });
                             setToken(response.data.token)
 
@@ -47,7 +49,7 @@ const SignUpScreen=({navigation})=>{
                         }   
   
                     }else{
-                        return alert('Password Match')
+                        return alert('Password not Matched')
                     }
                 }else{
                     return alert('Short length')
@@ -60,6 +62,7 @@ const SignUpScreen=({navigation})=>{
         }
     }
 
+    const placeholderColor = 'black';
     return(
         <KeyboardAvoidingView style={styles.container} behavior="padding">
 
@@ -69,6 +72,7 @@ const SignUpScreen=({navigation})=>{
                 <TextInput
                     style={styles.inputStyle}
                     placeholder="Username"
+                    placeholderTextColor = 'lightgray'
                     onChangeText={(text)=>{setUsername(text)}}
                     />
 
@@ -76,6 +80,7 @@ const SignUpScreen=({navigation})=>{
                     keyboardType="email-address"
                     style={styles.inputStyle}
                     placeholder="Email Address"
+                    placeholderTextColor = 'lightgray'
                     onChangeText={(text)=>{setEmail(text)}}
                     />
 
@@ -83,6 +88,7 @@ const SignUpScreen=({navigation})=>{
                     style={styles.inputStyle}
                     placeholder="Password"
                     secureTextEntry={true}
+                    placeholderTextColor = 'lightgraylightgray'
                     onChangeText={(text)=>{setPassword(text)}}
                     />
 
@@ -90,6 +96,7 @@ const SignUpScreen=({navigation})=>{
                     style={styles.inputStyle}
                     placeholder="Re-Password"
                     secureTextEntry={true}
+                    placeholderTextColor = 'lightgray'
                     onChangeText={(text)=>{setRePassword(text)}}
                     />
             </View>
@@ -130,7 +137,9 @@ const styles = StyleSheet.create({
         paddingHorizontal:10,
         height: 45, 
         borderColor: 'midnightblue', 
-        borderWidth: 1
+        borderWidth: 1,
+        color:'#000000'
+
     }
 });
 

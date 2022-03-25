@@ -1,7 +1,6 @@
 import React, {useRef , useState} from 'react';
 import { StyleSheet, Text, View, TextInput, FlatList, KeyboardAvoidingView, Button, TouchableOpacity } from 'react-native';
-// import { Constants } from 'expo';
-
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 
 
 export default function NavigationButtons(props){
@@ -52,37 +51,44 @@ export default function NavigationButtons(props){
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding">
       
-      <View style={styles.Navigation}>
+      <View style={[styles.Navigation , {alignItems:'flex-end'}]}>
         <TouchableOpacity 
-          style={{width:'100%', height:'100%', flexDirection:'column' , alignItems:'center' , justifyContent:'center'}}
+          // style={{width:'100%', height:'100%', flexDirection:'column' , alignItems:'center' , justifyContent:'center'}}
+          style={styles.buttonStyle}
           onPressIn={()=>onSendMessage('left', 'LEFT IN')} 
           onPressOut={()=>onSendMessage('left', 'LEFT OUT')}>
-          <Text style={{color:'black'}}>LEFT</Text>
+          <Text style={{color:'#ececec' ,fontSize:30 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>{"<"}</Text>
         </TouchableOpacity>
       </View>
 
-      <View style={[styles.Navigation , {flexDirection:'column'}]}>
+      <View style={[styles.Navigation , {flexDirection:'column', justifyContent:'space-between'}]}>
           <TouchableOpacity 
-            style={{height:'50%', width:'100%', justifyContent:'center' , borderWidth:1 , alignItems:'center'}}
+            // style={{height:'50%', width:'100%', justifyContent:'center' , borderWidth:1 , alignItems:'center'}}
+            style={styles.buttonStyle}
             onPressIn={()=>onSendMessage('go', 'GO IN')} 
             onPressOut={()=>onSendMessage('go', 'GO OUT')}>
-            <Text style={{color:'black'}}>GO</Text>
+            <Text style={{color:'#ececec' ,fontSize:35 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>{"^"}</Text>
           </TouchableOpacity>
 
+          
+          
           <TouchableOpacity 
-            style={{height:'50%', width:'100%', justifyContent:'center' , borderWidth:1 , alignItems:'center'}}
+            // style={{height:'50%', width:'100%', justifyContent:'center' , borderWidth:1 , alignItems:'center'}}
+            style={styles.buttonStyle}
             onPressIn={()=>onSendMessage('back', 'BACK IN')} 
             onPressOut={()=>onSendMessage('back', 'BACK OUT')}>
-            <Text style={{color:'black'}}>BACK</Text>
+            <Text style={{color:'#ececec' ,fontSize:28 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>{"v"}</Text>
           </TouchableOpacity>
+
       </View>
 
-      <View style={styles.Navigation}>
+      <View style={[styles.Navigation , {alignItems:'flex-start'}]}>
           <TouchableOpacity 
-            style={{width:'100%' , height:'100%', flexDirection:'column' , alignItems:'center' , justifyContent:'center'}} 
+            // style={{width:'100%' , height:'100%', flexDirection:'column' , alignItems:'center' , justifyContent:'center'}}
+            style={styles.buttonStyle} 
             onPressIn={()=>onSendMessage('right', 'RIGHT IN')} 
             onPressOut={()=>onSendMessage('right', 'RIGHT OUT')}>
-            <Text style={{color:'black'}}>RIGHT</Text>
+            <Text style={{color:'#ececec' ,fontSize:30 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>{">"}</Text>
           </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -110,11 +116,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection:'row',
+    paddingVertical:15,
     justifyContent:'center',
-    borderWidth:2,  
+    backgroundColor:'#c3c3c3'
   },
   Navigation:{
-    width:'35%'
+    width:'35%',
+    alignItems:'center',
+    justifyContent:'space-evenly'
   },
   messages: {
     alignSelf: 'stretch'
@@ -124,5 +133,16 @@ const styles = StyleSheet.create({
   },
   joinPart: {
     fontStyle: 'italic'
+  },
+
+  buttonStyle:{
+    width:'60%',
+    height:75,
+    borderWidth:4,
+    borderColor:'#075d9a',
+    borderRadius:35,
+    alignItems:'center',
+    justifyContent:'center',
+    backgroundColor:'#098ae4'
   }
 });
