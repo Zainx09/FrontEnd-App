@@ -1,4 +1,14 @@
+
 {
+    "projectName" : "Video_Calling",
+    "appId" : "72c2e0389a9e4beabcddc99e0d15a9d1",
     "channelName" : "myChannel",
-    "token" : "00672c2e0389a9e4beabcddc99e0d15a9d1IACky2WHWPrEo8Lts5Terj7kWtuQhSoYzmLoSk4CcIJFXUOQEggAAAAAEAB+Qmt6Ot46YgEAAQA63jpi"
+    "token" : "00672c2e0389a9e4beabcddc99e0d15a9d1IAAMt391+DUDrfRZDza1ZcbjUIXz/E65QQYhEBJytk1jhEOQEggAAAAAEADR1hyrGnpAYgEAAQAZekBi",
+
+    "projectName2" : "Fyp_Project",
+    "appId2" : "b69ca8f2a7614feb86c696ae2731e5e4",
+    "channelName2" : "myChannel2",
+    "token2" : "006b69ca8f2a7614feb86c696ae2731e5e4IAAmjlgrDKHnd/FAZ4oRBPLv/v784OpCyKKY+kuzpBp2A7e8CPUAAAAAEADR1hyr6HxAYgEAAQDofEBi"
 }
+
+

@@ -2,7 +2,7 @@ npx react-native init MainApp
 
 Run instructions for Android:
     • Have an Android emulator running (quickest way to get started), or a device connected.
-    • cd "I:\ZAIN DRIVE\FYP\PROJECT-FOLDER\FRONTEND-APP\MainApp_v1" && npx react-native run-android
+    • cd "I:\ZAIN DRIVE\FYP\PROJECT-FOLDER\FRONTEND-APP\MainApp_v1" && npx react-native run-android --no-jetifier
 
     npx react-native start
 npm i @react-native-community/cli-platform-android

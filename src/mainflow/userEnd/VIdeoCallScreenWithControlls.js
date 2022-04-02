@@ -7,13 +7,20 @@ import 'react-native-gesture-handler';
 
 import React from 'react';
 import { useState , useEffect, useContext} from 'react';
-import { StyleSheet, Text, View , TouchableOpacity , Dimensions, TextInput, BackHandler, Alert, Clipboard, ToastAndroid} from 'react-native';
+import { StyleSheet, Text, View , TouchableOpacity , Dimensions, TextInput, BackHandler, Alert, Clipboard, ToastAndroid, Image} from 'react-native';
 import {StackActions} from '@react-navigation/native';
 import Pusher from 'pusher-js/react-native';
 
 import pusherConfig from '../pusher.json';
 import AgoraUIKit from 'agora-rn-uikit';
 import agoraConfig from "./AgorarChannels.json"
+
+
+import Icon from 'react-native-vector-icons/FontAwesome5';
+import IIcon from 'react-native-vector-icons/Ionicons';
+import MIcon from 'react-native-vector-icons/MaterialCommunityIcons';
+
+import BluetoothSerial from 'react-native-bluetooth-serial-2'
 
 import NavigationButtons from './NavigationButtons';
 
@@ -32,8 +39,19 @@ const windowHeight = Dimensions.get('window').height;
 const VideoCallHeight = windowHeight*(70/100);
 const buttonsHeight = windowHeight*(30/100);
 
-export default function VideoCallScreenWithControlls({navigation}){
+export default function VideoCallScreenWithControlls({ route, navigation }){
 
+    const {control} = route.params;
+
+    const showToastWithGravity = (msg) => {
+      ToastAndroid.showWithGravity(
+        msg,
+        ToastAndroid.SHORT,
+        ToastAndroid.BOTTOM
+      );
+    };
+
+    
     ////////////////// ABLY API ///////////////////////////
 
     const context = useContext(ChannelContext);
@@ -41,6 +59,7 @@ export default function VideoCallScreenWithControlls({navigation}){
 
     ///// For Navigations
     const onSendMessage=(text)=>{
+      showToastWithGravity(text)
       context.channel.publish('MyCommand', text);
     }
 
@@ -57,11 +76,31 @@ export default function VideoCallScreenWithControlls({navigation}){
     const [callOption , setCallOption] = useState(null);
     const [callID , setCallID] = useState('')
     const [videoCall, setVideoCall] = useState(false);
-    const rtcProps = {
-        appId: '72c2e0389a9e4beabcddc99e0d15a9d1',
-        token: agoraConfig.token,
-        channel: agoraConfig.channelName
-    };
+
+    const [rtcProps, setRtcProps] = useState({})
+
+    // let rtcProps = {};
+
+    function CallOptions(option){
+      setCallOption(option)
+
+      if(option === 'join'){
+        setRtcProps({
+          appId: agoraConfig.appId2,
+          token: agoraConfig.token2,
+          channel: agoraConfig.channelName2
+        })
+
+      }else if(option === 'create'){
+
+        setRtcProps({
+          appId: agoraConfig.appId,
+          token: agoraConfig.token,
+          channel: agoraConfig.channelName
+        })
+      }
+    }
+    
     const callbacks = {EndCall: () => setVideoCall(false)};
 
     function checkId(Id){
@@ -89,6 +128,9 @@ export default function VideoCallScreenWithControlls({navigation}){
             setVideoCall(false)
           }}
         ]);
+        return true;
+      }else if(callOption !== null){
+        setCallOption(null);
         return true;
       }
       return;
@@ -137,42 +179,168 @@ export default function VideoCallScreenWithControlls({navigation}){
 
 
     useEffect(()=>{
-      setUpdateIntervalForType(SensorTypes.orientation  ,500);
+      if(control){
+        setUpdateIntervalForType(SensorTypes.orientation  ,500);
+      }
+      
     },[]);
 
     
 
     useEffect(() => {
 
-      let device_motion = orientation.subscribe(({qx, qy, qz, qw, pitch, roll, yaw}) =>{
-        // setData({'qx':qx, 'qy':qy, 'qz':qz, 'qw':qw, 'pitch':pitch, 'roll':roll, 'yaw':yaw});
-        let dat = {'qx':qx, 'qy':qy, 'qz':qz, 'qw':qw,};
-        let euler = quaternionToAngles(dat);
-  
-        // setData({'roll':round(euler.roll), 'yaw':round(euler.yaw)});
-        setData({'roll':getAngle('roll',euler.roll), 'yaw':getAngle('yaw',euler.yaw)});
-          //  console.log('call')
-        if (videoCall){
-          if(data){
-            if (data.roll === getAngle('roll',euler.roll) && data.yaw === getAngle('yaw',euler.yaw)){
-                return null
-            }else{
-                // const txt = 'y = '+ getAngle('roll',euler.roll) + " z = " + getAngle('yaw',euler.yaw)
-                const txt = getAngle('roll',euler.roll) + " " + getAngle('yaw',euler.yaw)
-                // console.log('change')
-                sendAngle(txt);
+      if(control){
+
+        let device_motion = orientation.subscribe(({qx, qy, qz, qw, pitch, roll, yaw}) =>{
+          // setData({'qx':qx, 'qy':qy, 'qz':qz, 'qw':qw, 'pitch':pitch, 'roll':roll, 'yaw':yaw});
+          let dat = {'qx':qx, 'qy':qy, 'qz':qz, 'qw':qw,};
+          let euler = quaternionToAngles(dat);
+    
+          // setData({'roll':round(euler.roll), 'yaw':round(euler.yaw)});
+          setData({'roll':getAngle('roll',euler.roll), 'yaw':getAngle('yaw',euler.yaw)});
+            //  console.log('call')
+          if (videoCall){
+            if(data){
+              if (data.roll === getAngle('roll',euler.roll) && data.yaw === getAngle('yaw',euler.yaw)){
+                  return null
+              }else{
+                  // const txt = 'y = '+ getAngle('roll',euler.roll) + " z = " + getAngle('yaw',euler.yaw)
+                  const txt = getAngle('roll',euler.roll) + " " + getAngle('yaw',euler.yaw)
+                  // console.log('change')
+                  sendAngle(txt);
+              }
             }
           }
-        }
-      })
+        })
 
-      return(()=>{
-          device_motion.unsubscribe();
-      })
+        return(()=>{
+            device_motion.unsubscribe();
+        })
+      }
 
     }, [data]);
 
     ///////////////// Sensor readings //////////////////////
+
+
+    ////////////////// Bluetooth Code ////////////////////
+
+  const [connected , setConnected] = useState(false);
+
+  // const [navigate , setNavigate] = useState('');
+
+  let navigate = '';
+
+
+  useEffect(() => {
+    if(!control){
+
+      const interval = setInterval(() => {
+        readData();
+        }, 500);
+
+        return () => clearInterval(interval);
+    }
+      
+  }, []);
+
+
+  //address of joystick's bluetooth 00:18:E4:40:00:06
+ 
+  async function connect_Bt(){
+    try{
+      let en = await BluetoothSerial.isEnabled();
+
+      if(!en){
+        showToastWithGravity("Please Enable Bluetooth.")
+        // console.log("Please Enable Bluetooth.")
+        return
+      }
+
+      await BluetoothSerial.connect("00:18:E4:40:00:06");
+
+      let check = BluetoothSerial.isConnected();
+
+      if (check){
+        setConnected(true);
+        showToastWithGravity("Connected")
+        // console.log('Connected')
+        
+      }else{
+        showToastWithGravity("Something Went Wrong")
+        setConnected(false);
+      }
+      
+    }catch(err){
+      setConnected(false);
+      showToastWithGravity(err.message)
+      // console.log('Error ------ ' , err)
+      
+    }
+    
+  }
+
+  async function readData(){
+    // let check = BluetoothSerial.isConnected();
+    if (!BluetoothSerial.isConnected()) {
+      showToastWithGravity("Must be connected!!");
+      return
+    }
+    
+    let data = await BluetoothSerial.readFromDevice();
+
+    try{
+      let data = await BluetoothSerial.readFromDevice();
+
+      if(data){
+      
+        if(data == 'F'){
+          if(navigate !== 'F'){
+            console.log(data);
+            navigate = 'F';
+            onSendMessage('GO IN');
+          }
+
+        }else if (data == 'B'){
+          if(navigate !== 'B'){
+            console.log(data);
+            navigate = 'B';
+            onSendMessage('BACK IN');
+          }
+
+        }else if (data == 'L'){
+          if(navigate !== 'L'){
+            console.log(data);
+            navigate = 'L'
+            onSendMessage('LEFT IN');
+          }
+          
+        }else if (data == 'R'){
+          if(navigate !== 'R'){
+            console.log(data);
+            navigate = 'R'
+            onSendMessage('RIGHT IN');
+          }
+          
+        }else if (data == 'C'){
+          if(navigate !== 'C'){
+            console.log(data);
+            navigate = 'C'
+            onSendMessage('GO OUT');
+          }
+          
+        }
+      }
+      
+    }catch(err){
+      setConnected(false);
+      // showToastWithGravity(err.message);
+      console.log(err.message)
+    }
+    
+    }
+
+  ////////////////// Bluetooth Code ////////////////////
 
 
 
@@ -244,14 +412,6 @@ export default function VideoCallScreenWithControlls({navigation}){
     // }
     ///////////////// Pusher API /////////////////////////
 
-
-    const showToastWithGravity = (msg) => {
-      ToastAndroid.showWithGravity(
-        msg,
-        ToastAndroid.SHORT,
-        ToastAndroid.BOTTOM
-      );
-    };
     
     return(
 
@@ -282,23 +442,23 @@ export default function VideoCallScreenWithControlls({navigation}){
 
           videoCall ? 
 
-            <View style={{flex:1 , flexDirection:'column'}}>
+            control? 
+              <View style={{flex:1 , flexDirection:'column'}}>
+                      <Text style={{color:'black'}}>{data.roll}</Text>
+                      <Text style={{color:'black'}}>{data.yaw}</Text>
+                  <View style={{height:'65%'}}>
+                      <AgoraUIKit rtcProps={rtcProps} callbacks={callbacks} /> 
+                  </View>
 
-                <Text style={{color:'black'}}>{data.roll}</Text>
-                <Text style={{color:'black'}}>{data.yaw}</Text>
+                  <View style={{height:'30%'}}>
+                      {/* <NavigationButtons messages={ messages } onSendMessage={ onSendMessage } /> */}
+                      <NavigationButtons onSendMessage={ onSendMessage } />
+                  </View>
 
-
-                <View style={{height:'65%'}}>
-                    <AgoraUIKit rtcProps={rtcProps} callbacks={callbacks} /> 
-                </View>
-
-                <View style={{height:'30%'}}>
-                    {/* <NavigationButtons messages={ messages } onSendMessage={ onSendMessage } /> */}
-                    <NavigationButtons onSendMessage={ onSendMessage } />
-                </View>
-
-            </View>
+              </View>
             :
+              <AgoraUIKit rtcProps={rtcProps} callbacks={callbacks} /> 
+          :
 
             <View style={{flex:1 , justifyContent:'center', alignItems:'center', backgroundColor:'white'}}>
 
@@ -324,52 +484,86 @@ export default function VideoCallScreenWithControlls({navigation}){
       
         :
         
-        <View style={{flex:1, alignItems:'center' , justifyContent:'space-evenly', backgroundColor:'white'}}>
+        // <View style={{flex:1, alignItems:'center' , justifyContent:'space-evenly', backgroundColor:'white'}}>
 
-              <Text style={{color:'#848484', fontSize:20 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>With Navigation</Text>
+        //       <Text style={{color:'#848484', fontSize:20 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>{control ? "With Navigation" : "Without Navigation"}</Text>
 
-              <TouchableOpacity 
-                  style={styles.buttonStyle}
-                  onPress={()=>setCallOption('join')}
-                  >
-                  <Text style={{color:'white', fontSize:17 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Join Call</Text>
-              </TouchableOpacity>
+        //       <TouchableOpacity 
+        //           style={styles.buttonStyle}
+        //           onPress={()=>{
+        //             CallOptions('join')
+        //             // setCallOption('join')
+        //           }}
+        //           >
+        //           <Text style={{color:'white', fontSize:17 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Join Call</Text>
+        //       </TouchableOpacity>
 
-              <TouchableOpacity 
-                  style={styles.buttonStyle}
-                  onPress={()=>setCallOption('create')}
-                  >
-                  <Text style={{color:'white', fontSize:17 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Create Call</Text>
-              </TouchableOpacity>
+        //       <TouchableOpacity 
+        //           style={styles.buttonStyle}
+        //           onPress={()=>{
+        //             CallOptions('create')
+        //             // setCallOption('create')
+        //           }}
+        //           >
+        //           <Text style={{color:'white', fontSize:17 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Create Call</Text>
+        //       </TouchableOpacity>
 
-        </View>
+        //       { !control &&
+        //         <TouchableOpacity 
+        //             style={[styles.buttonStyle , {height:'14%'}]}
+        //             onPress={()=>connect_Bt()}
+        //             >
+        //             <Text style={{color:'white', fontSize:17 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Connect Controller</Text>
+        //         </TouchableOpacity>
+        //       }
+              
+
+        // </View>
+
+        <View style={{width:'90%' , height:"85%", backgroundColor:'white', borderWidth:3, borderRadius:20, borderColor:'darkgray', alignItems:'center', justifyContent:'space-evenly', alignSelf:'center', marginTop:"15%"}}>
+          <View style={{flexDirection:'row'}}>
+            <MIcon 
+              name="robot-outline" 
+              size={25} 
+              color={'gray'} />
+            <Text style={[styles.textStyle , {fontWeight:'bold', color:'gray', fontSize:18, marginLeft:10}]}>{control ? "With Navigation" : "Without Navigation"}</Text>
+          </View>
           
+          <Image 
+            source={require("../../Animations/RoboticEnd2.gif")}  
+            style={{width:'70%', height:'50%'}}
+          />
+
+          <View style={{flexDirection:'column', width:'100%', height:'25%', justifyContent:'space-evenly', alignItems:'center'}}>
+            <TouchableOpacity 
+              style={[styles.buttonStyle , { backgroundColor:'#d53ca5', borderColor:'#c72f97', borderWidth:3, flexDirection:'row'}]} 
+              onPress={()=>{CallOptions('join')}}>
+                <MIcon 
+                  name="call-merge" 
+                  size={20} 
+                  color={'white'} />
+                <Text style={[styles.textStyle , {marginLeft:5}]}>Join Call</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.buttonStyle , {backgroundColor:'#d53ca5', borderColor:'#c72f97', borderWidth:3, flexDirection:'row'}]} 
+              onPress={()=>{CallOptions('create')}}>
+                <MIcon 
+                  name="call-made" 
+                  size={16} 
+                  color={'white'} />
+                <Text style={[styles.textStyle , {marginLeft:5}]}>Create Call</Text>
+            </TouchableOpacity>
+            
+          </View>
+          
+        </View>
+
       }
       
     </View>
-
-
-        // <View style={{flex:1 , flexDirection:'column'}}> 
-            
-        //     <View style={{height:VideoCallHeight}}>
-
-        //         {videoCall ? 
-                
-        //         <AgoraUIKit rtcProps={rtcProps} callbacks={callbacks} /> 
-                
-        //         : 
-                
-        //         <Text onPress={()=>setVideoCall(true)}>Start Call</Text>}
         
-        //     </View>
-            
-        //     <View style={{height:buttonsHeight}}>
-        //         <NavigationButtons messages={ messages } onSendMessage={ onSendMessage } />
-        //     </View>
-
-        // </View>
-        
-    )
+  )
 }
 
 
@@ -377,13 +571,13 @@ const styles = StyleSheet.create({
 
   buttonStyle:{
     width:'85%', 
-    height:'25%', 
+    height:'40%',
     alignItems:'center', 
     justifyContent:'center', 
-    backgroundColor:'#a3c0e5', 
+    backgroundColor:'#57bec5', 
     borderWidth:5,
-    borderColor:'#6e8aa1',
-    borderRadius:25
+    borderColor:'#14a2ab',
+    borderRadius:10, 
   },
   buttonStyle1:{
     width:'85%', 
@@ -394,6 +588,13 @@ const styles = StyleSheet.create({
     borderWidth:6,
     borderColor:'#6e8aa1',
     borderRadius:20
+  },
+  textStyle:{
+    color:'white', 
+    fontSize:14,
+    fontFamily:'sans-serif-medium',
+    textAlign:'center',
+    fontWeight:'bold'
   },
 })
 

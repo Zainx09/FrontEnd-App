@@ -52,9 +52,9 @@ export default function App(){
                   
 
                   
-                    {/* <Stack.Screen name="SplashScreen" component={SplashScreen} />
+                    {/* <Stack.Screen name="SplashScreen" component={SplashScreen} /> */}
 
-                    <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
+                    {/* <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
                     <Stack.Screen name="SignInScreen" component={SignInScreen} /> */}
 
                     {/* <Stack.Screen name="MainFlow" component={MainFlow} />

@@ -2,15 +2,20 @@ import 'react-native-gesture-handler';
 import { useState , useEffect, useContext} from 'react';
 import React from 'react';
 import Pusher from 'pusher-js/react-native';
-import { StyleSheet, Text, View , TouchableOpacity , TextInput, ToastAndroid, Clipboard, BackHandler, Alert} from 'react-native';
+import { StyleSheet, Text, View , TouchableOpacity , ToastAndroid, Clipboard, BackHandler, Alert, Image} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {StackActions} from '@react-navigation/native';
 
+//RN Paper
+import { TextInput, Button } from 'react-native-paper';
+
+import Icon from 'react-native-vector-icons/FontAwesome5';
+import IIcon from 'react-native-vector-icons/Ionicons';
+import MIcon from 'react-native-vector-icons/MaterialCommunityIcons';
+
 import AgoraUIKit from 'agora-rn-uikit';
 import agoraConfig from "../userEnd/AgorarChannels.json"
-
-import Icon from 'react-native-vector-icons/FontAwesome';
 
 import pusherConfig from '../pusher.json';
 
@@ -26,6 +31,10 @@ import { ChannelContext } from '../../../App';
 
 
 export default function RoboticEndUI({navigation}){
+
+  //for Button
+  const [loading , setLoading] = useState(false);
+  const [disable , setDisable] = useState(false);
   
 
   ////////////////// ABLY API ///////////////////////////
@@ -165,11 +174,31 @@ export default function RoboticEndUI({navigation}){
   const [callOption , setCallOption] = useState(null);
   const [callID , setCallID] = useState('')
   const [videoCall, setVideoCall] = useState(false);
-  const rtcProps = {
-      appId: '72c2e0389a9e4beabcddc99e0d15a9d1',
-      token: agoraConfig.token,
+
+  const [rtcProps, setRtcProps] = useState({})
+
+  // let rtcProps = {};
+
+  function CallOptions(option){
+    setCallOption(option)
+
+    if(option === 'join'){
+      setRtcProps({
+        appId: agoraConfig.appId,
+        token: agoraConfig.token,
         channel: agoraConfig.channelName
-  };
+      })
+
+    }else if(option === 'create'){
+
+      setRtcProps({
+        appId: agoraConfig.appId2,
+        token: agoraConfig.token2,
+        channel: agoraConfig.channelName2
+      })
+    }
+  }
+
   const callbacks = {EndCall: () => setVideoCall(false)};
 
 
@@ -195,9 +224,15 @@ export default function RoboticEndUI({navigation}){
           // navigation.dispatch(
           //       StackActions.replace('HomePageScreen'))
           // navigation.navigate('HomePageScreen')
-          setVideoCall(false)
+          
+          setVideoCall(false);
+          
+          
         }}
       ]);
+      return true;
+    }else if(callOption !== null){
+      setCallOption(null);
       return true;
     }
     return;
@@ -214,7 +249,7 @@ export default function RoboticEndUI({navigation}){
     );
 
     return () => backHandler.remove();
-  }, [videoCall]);
+  }, [videoCall, callOption]);
 
   ///////////////// Video Call //////////////////////
 
@@ -322,7 +357,7 @@ export default function RoboticEndUI({navigation}){
 
   ////////////////// Bluetooth Code ////////////////////
 
-  const [connected , setConnected] = useState(false);
+  const [connected , setConnected] = useState(true);
 
 
   const showToastWithGravity = (msg) => {
@@ -334,10 +369,12 @@ export default function RoboticEndUI({navigation}){
   };
  
   async function connect_Bt(){
+    setLoading(true); setDisable(true);
     try{
       let en = await BluetoothSerial.isEnabled();
 
       if(!en){
+        setLoading(false); setDisable(false);
         showToastWithGravity("Please Enable Bluetooth.")
         // console.log("Please Enable Bluetooth.")
         return
@@ -350,11 +387,13 @@ export default function RoboticEndUI({navigation}){
         setConnected(true);
         showToastWithGravity("Connected")
       }else{
-        showToastWithGravity("Something Went Wrong")
+        setLoading(false); setDisable(false);
+        showToastWithGravity("Please Try Again!")
         setConnected(false);
       }
 
     }catch(err){
+      setLoading(false); setDisable(false);
       setConnected(false);
       showToastWithGravity(err.message)
     } 
@@ -425,18 +464,33 @@ export default function RoboticEndUI({navigation}){
         <View style={{flex:1 , justifyContent:'center' ,alignItems:'center',  backgroundColor:'white'}}>
           
               <TextInput
-                style={{width:'85%', height:60, marginBottom:"10%", paddingHorizontal:10, textAlign:'center', borderColor: '#8aae60', borderWidth:4, borderRadius:10 ,color:'#848484', fontSize:14 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
-                placeholder="Please type ID to Join the Call"
+                style={{width:'85%',fontSize:14 , fontFamily:'sans-serif-medium' , fontWeight:'bold', marginBottom:20}}
+                placeholder="Type Call ID Here"
                 placeholderTextColor = 'lightgray'
                 onChangeText={(text)=>{setCallID(text)}}
+                mode="outlined"
+                label="Call ID"
+                left={<TextInput.Icon name="call-made" size={20} color="gray"/>}
               />
 
-              <TouchableOpacity 
+              {/* <TouchableOpacity 
                   style={[styles.buttonStyle1 , {height:80, width:'55%', borderWidth:4}]}
                   onPress={()=>checkId(callID)}
                   >
                   <Text style={{color:'#ececec' ,fontSize:20 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Join Call</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
+ 
+              <Button 
+                    style={callID ? [styles.buttonStyle1 , {height:60, width:'55%', borderWidth:3, backgroundColor:'#9366f4', borderColor:'#8152e5'}]: [styles.buttonStyle1 , {height:60, width:'55%', borderWidth:3, backgroundColor:'darkgray', borderColor:'gray'}]}
+                    labelStyle={{color:'white' ,fontSize:14 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
+                    icon="connection"
+                    mode="contained" 
+                    loading={loading}
+                    disabled={callID? disable : true}
+                    onPress={()=>checkId(callID)}>
+                    
+                        Join Call
+                </Button>
 
         </View>
 
@@ -481,101 +535,235 @@ export default function RoboticEndUI({navigation}){
     
       :
       
-      <View style={{flex:1 , alignItems:'center' , justifyContent:'space-evenly', backgroundColor:'white'}}>
+      // <View style={{flex:1 , alignItems:'center' , justifyContent:'space-evenly', backgroundColor:'white'}}>
   
-              <Text style={{color:'#848484', fontSize:25 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Robotic End</Text>
+      //         <Text style={{color:'#848484', fontSize:25 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Robotic End</Text>
               
-              <TouchableOpacity 
-                  style={[styles.buttonStyle1, {height:'16%'}]}
-                  onPress={()=>setCallOption('join')}
-                  >
-                  <Text style={{color:'white', fontSize:18 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Join Call</Text>
-              </TouchableOpacity>
+      //         <TouchableOpacity 
+      //             style={[styles.buttonStyle1, {height:'16%'}]}
+      //             onPress={()=>{
+      //               CallOptions('join')
+      //               // setCallOption('join')
+      //             }}
+      //             >
+      //             <Text style={{color:'white', fontSize:18 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Join Call</Text>
+      //         </TouchableOpacity>
 
-              <TouchableOpacity 
-                  style={[styles.buttonStyle1, {height:'16%'}]}
-                  onPress={()=>setCallOption('create')}
-                  >
-                  <Text style={{color:'white', fontSize:18 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Create Call</Text>
-              </TouchableOpacity>
+      //         <TouchableOpacity 
+      //             style={[styles.buttonStyle1, {height:'16%'}]}
+      //             onPress={()=>{
+      //               CallOptions('create')
+      //               // setCallOption('create')
+      //             }}
+      //             >
+      //             <Text style={{color:'white', fontSize:18 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Create Call</Text>
+      //         </TouchableOpacity>
 
-              <TouchableOpacity 
-                  style={styles.buttonStyle1}
-                  onPress={()=>connect_Bt()}
-                  >
-                  <Text style={{color:'white', fontSize:18 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Connect Bluetooth</Text>
-              </TouchableOpacity>
+      //         <TouchableOpacity 
+      //             style={styles.buttonStyle1}
+      //             onPress={()=>connect_Bt()}
+      //             >
+      //             <Text style={{color:'white', fontSize:18 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Connect Bluetooth</Text>
+      //         </TouchableOpacity>
 
-              {/* <TouchableOpacity 
-                  style={{width:'80%', height:60, marginVertical:20,  alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black' , backgroundColor:'lightblue'}}
-                  onPress={()=>BT_List()}
-                  >
-                  <Text style={{color:'black', fontSize:15}}>Bluetooth List</Text>
-              </TouchableOpacity> */}
+      //         {/* <TouchableOpacity 
+      //             style={{width:'80%', height:60, marginVertical:20,  alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black' , backgroundColor:'lightblue'}}
+      //             onPress={()=>BT_List()}
+      //             >
+      //             <Text style={{color:'black', fontSize:15}}>Bluetooth List</Text>
+      //         </TouchableOpacity> */}
 
-              {connected 
-                &&
-              <>
+      //         {connected 
+      //           &&
+      //         <>
               
-              <Text style={{color:'#373738', fontSize:15 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>
-                Test Movements
-              </Text>
+      //         <Text style={{color:'#373738', fontSize:15 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>
+      //           Test Movements
+      //         </Text>
 
-              <View style={{width:'100%' , height:'8%' , flexDirection:'row' , justifyContent:'space-evenly'}}>
+      //         <View style={{width:'100%' , height:'8%' , flexDirection:'row' , justifyContent:'space-evenly'}}>
 
-                <TouchableOpacity 
-                    style={styles.testMovement}
-                    onPressIn={()=>write_data('F')} onPressOut={()=>write_data("C")}
-                    >
-                    <Text style={{color:'#373738', fontSize:12, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>GO</Text>
-                </TouchableOpacity>
+      //           <TouchableOpacity 
+      //               style={styles.testMovement}
+      //               onPressIn={()=>write_data('F')} onPressOut={()=>write_data("C")}
+      //               >
+      //               <Text style={{color:'#373738', fontSize:12, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>GO</Text>
+      //           </TouchableOpacity>
 
-                <TouchableOpacity 
-                    style={styles.testMovement}
-                    onPressIn={()=>write_data('B')} onPressOut={()=>write_data("C")}
-                    >
-                    <Text style={{color:'#373738', fontSize:12, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>BACK</Text>
-                </TouchableOpacity>
+      //           <TouchableOpacity 
+      //               style={styles.testMovement}
+      //               onPressIn={()=>write_data('B')} onPressOut={()=>write_data("C")}
+      //               >
+      //               <Text style={{color:'#373738', fontSize:12, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>BACK</Text>
+      //           </TouchableOpacity>
 
-              </View>
+      //         </View>
 
-              <Text style={{color:'#373738', fontSize:15 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>
-                Test Head Rotation
-              </Text>
+      //         <Text style={{color:'#373738', fontSize:15 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>
+      //           Test Head Rotation
+      //         </Text>
 
-              <View style={{width:'100%' , height:'8%' , flexDirection:'row' , justifyContent:'space-evenly'}}>
+      //         <View style={{width:'100%' , height:'8%' , flexDirection:'row' , justifyContent:'space-evenly'}}>
 
-                <TouchableOpacity 
-                    style={styles.testMovement}
-                    onPressIn={()=>write_data('a')} onPressOut={()=>write_data("c")}
-                    >
-                    <Text style={{color:'#373738', fontSize:12, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>UP</Text>
-                </TouchableOpacity>
+      //           <TouchableOpacity 
+      //               style={styles.testMovement}
+      //               onPressIn={()=>write_data('a')} onPressOut={()=>write_data("c")}
+      //               >
+      //               <Text style={{color:'#373738', fontSize:12, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>UP</Text>
+      //           </TouchableOpacity>
 
-                <TouchableOpacity 
-                    style={styles.testMovement}
-                    onPressIn={()=>write_data('d')} onPressOut={()=>write_data("h")}
-                    >
-                    <Text style={{color:'#373738', fontSize:12, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>LEFT</Text>
-                </TouchableOpacity>
+      //           <TouchableOpacity 
+      //               style={styles.testMovement}
+      //               onPressIn={()=>write_data('d')} onPressOut={()=>write_data("h")}
+      //               >
+      //               <Text style={{color:'#373738', fontSize:12, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>LEFT</Text>
+      //           </TouchableOpacity>
 
-              </View>
-              </>}
+      //         </View>
+      //         </>}
 
 
-              {/* <TouchableOpacity 
-                  style={{width:'60%', height:80, marginVertical:20,  alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black' , backgroundColor:'green'}}
-                  onPressIn={()=>write_data('F')} onPressOut={()=>write_data("C")}
-                  >
-                  <Text style={{color:'black', fontSize:15}}>Check Forward Drive</Text>
-              </TouchableOpacity>
+      //         {/* <TouchableOpacity 
+      //             style={{width:'60%', height:80, marginVertical:20,  alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black' , backgroundColor:'green'}}
+      //             onPressIn={()=>write_data('F')} onPressOut={()=>write_data("C")}
+      //             >
+      //             <Text style={{color:'black', fontSize:15}}>Check Forward Drive</Text>
+      //         </TouchableOpacity>
 
-              <TouchableOpacity 
-                  style={{width:'60%', height:80, marginVertical:20,  alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black' , backgroundColor:'green'}}
-                  onPressIn={()=>write_data('a')} onPressOut={()=>write_data("l")}
-                  >
-                  <Text style={{color:'black', fontSize:15}}>Check Servo Angles</Text>
-              </TouchableOpacity> */}
+      //         <TouchableOpacity 
+      //             style={{width:'60%', height:80, marginVertical:20,  alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black' , backgroundColor:'green'}}
+      //             onPressIn={()=>write_data('a')} onPressOut={()=>write_data("l")}
+      //             >
+      //             <Text style={{color:'black', fontSize:15}}>Check Servo Angles</Text>
+      //         </TouchableOpacity> */}
+
+      // </View>
+        
+      <View style={{flex:1 , alignItems:'center' , justifyContent:'space-evenly'}}>
+
+        <View style={{width:'90%' , height:connected ? '60%' : "65%", backgroundColor:'white', borderWidth:3, borderRadius:20, borderColor:'darkgray', alignItems:'center', justifyContent:'space-evenly'}}>
+          <View style={{flexDirection:'row'}}>
+            <MIcon 
+              name="robot-outline" 
+              size={25} 
+              color={'gray'} />
+            <Text style={[styles.textStyle , {fontWeight:'bold', color:'gray', fontSize:18, marginLeft:10}]}>ROBOTIC END</Text>
+          </View>
+          
+          <Image 
+            source={require("../../Animations/RoboticEnd2.gif")}  
+            style={{width:'70%', height:'50%'}}
+          />
+
+          <View style={{flexDirection:'row',width:'100%', height:'14%', justifyContent:'space-evenly'}}>
+            <TouchableOpacity 
+              style={[styles.buttonStyle , {height:'100%', backgroundColor:'#d53ca5', borderColor:'#c72f97', borderWidth:3, flexDirection:'row'}]} 
+              onPress={()=>{CallOptions('join')}}>
+                <MIcon 
+                  name="call-merge" 
+                  size={20} 
+                  color={'white'} />
+                <Text style={[styles.textStyle , {marginLeft:5}]}>Join Call</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.buttonStyle , {height:'100%', backgroundColor:'#d53ca5', borderColor:'#c72f97', borderWidth:3, flexDirection:'row'}]} 
+              onPress={()=>{CallOptions('create')}}>
+                <MIcon 
+                  name="call-made" 
+                  size={16} 
+                  color={'white'} />
+                <Text style={[styles.textStyle , {marginLeft:5}]}>Create Call</Text>
+            </TouchableOpacity>
+            
+          </View>
+          
+        </View>
+
+          {connected ?
+               
+               <View style={{width:'90%' , height:'30%' , backgroundColor:'white', borderWidth:3, borderRadius:20, borderColor:'darkgray', alignItems:'center', justifyContent:'space-evenly'}}>
+              
+               <Text style={{color:'#373738', fontSize:15 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>
+                 Test Movements
+               </Text>
+
+               <View style={{width:'100%' , height:'25%' , flexDirection:'row' , justifyContent:'space-evenly'}}>
+
+                 <TouchableOpacity 
+                     style={styles.testMovement}
+                     onPressIn={()=>write_data('F')} onPressOut={()=>write_data("C")}
+                     >
+                     <Text style={{color:'#373738', fontSize:11, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>GO</Text>
+                 </TouchableOpacity>
+
+                 <TouchableOpacity 
+                     style={styles.testMovement}
+                     onPressIn={()=>write_data('B')} onPressOut={()=>write_data("C")}
+                     >
+                     <Text style={{color:'#373738', fontSize:11, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>BACK</Text>
+                 </TouchableOpacity>
+
+               </View>
+
+               <Text style={{color:'#373738', fontSize:15 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>
+                 Test Head Rotation
+               </Text>
+
+               <View style={{width:'100%' , height:'25%' , flexDirection:'row' , justifyContent:'space-evenly'}}>
+
+                 <TouchableOpacity 
+                     style={[styles.testMovement , {width:"40%"}]}
+                     onPressIn={()=>write_data('a')} onPressOut={()=>write_data("c")}
+                     >
+                     <Text style={{color:'#373738', fontSize:11, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>UP / DOWN</Text>
+                 </TouchableOpacity>
+
+                 <TouchableOpacity 
+                     style={[styles.testMovement , {width:"40%"}]}
+                     onPressIn={()=>write_data('d')} onPressOut={()=>write_data("h")}
+                     >
+                     <Text style={{color:'#373738', fontSize:11, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>LEFT / RIGHT</Text>
+                 </TouchableOpacity>
+
+               </View>
+               </View>
+               
+              :
+              // <TouchableOpacity 
+              //   style={[styles.buttonStyle1 , {flexDirection:'row'}]}
+              //   onPress={()=>connect_Bt()}
+              //   >
+              //     <MIcon 
+              //       name="bluetooth" 
+              //       size={25} 
+              //       color={'white'} />
+              //     <Button 
+              //       style={{height:'100%', justifyContent:'center'}}
+              //       labelStyle={{color:'white', fontSize:13, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
+              //       mode="Outlined" 
+              //       loading={loading}
+              //       disabled={disable}>
+                      
+              //         Connect Bluetooth
+              //     </Button>
+              //     {/* <Text style={{color:'white', fontSize:18 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Connect Bluetooth</Text> */}
+              // </TouchableOpacity>
+
+              <Button 
+                style={styles.buttonStyle1}
+                labelStyle={{color:'white', fontSize:13, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
+                mode="contained" 
+                icon='bluetooth'
+                loading={loading}
+                disabled={disable}
+                compact={true}
+                onPress={()=>connect_Bt()}>
+                  
+                  CONNECT ROBOT
+              </Button>
+            }
+
 
       </View>
         
@@ -587,15 +775,26 @@ export default function RoboticEndUI({navigation}){
 
 const styles = StyleSheet.create({
 
+  buttonStyle:{
+    width:'45%', 
+    height:'12%',
+    alignItems:'center', 
+    justifyContent:'center', 
+    backgroundColor:'#57bec5', 
+    borderWidth:5,
+    borderColor:'#14a2ab',
+    borderRadius:10,
+    
+  },
   buttonStyle1:{
     width:'85%', 
     height:'10%', 
     alignItems:'center', 
     justifyContent:'center', 
-    backgroundColor:'#a7ca7f', 
-    borderWidth:6,
-    borderColor:'#8aae60',
-    borderRadius:20
+    backgroundColor:'lightgray', 
+    borderWidth:3,
+    borderColor:'darkgray',
+    borderRadius:10
   }
   ,
   testMovement:{
@@ -605,8 +804,15 @@ const styles = StyleSheet.create({
     justifyContent:'center', 
     borderWidth:3, 
     borderStyle:'solid' , 
-    borderColor:'#7d8081' , 
-    borderRadius:20,
-    backgroundColor:'#93989a'
-  }
+    borderColor:'darkgray' , 
+    borderRadius:10,
+    backgroundColor:'lightgray'
+  },
+  textStyle:{
+    color:'white', 
+    fontSize:14,
+    fontFamily:'sans-serif-medium',
+    textAlign:'center',
+    fontWeight:'bold'
+  },
 })

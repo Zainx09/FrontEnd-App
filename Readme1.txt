@@ -98,3 +98,8 @@ npm i ably
 
 //icons
 npm i react-icons
+npm install --save react-native-vector-icons
+
+
+//React native paper
+npm i react-native-paper
