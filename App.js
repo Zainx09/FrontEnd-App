@@ -24,6 +24,8 @@ import RoboticEndUI from "./src/mainflow/roboticEnd/RoboticEndUI"
 
 import SettingScreen from './src/mainflow/SettingScreen';
 
+import CallLogScreen from './src/mainflow/callLogs/CallLogScreen';
+
 const Stack = createNativeStackNavigator();
 
 import Ably from "ably";
@@ -66,7 +68,9 @@ export default function App(){
                     <Stack.Screen name="VideoCallScreenWithControlls" component={VideoCallScreenWithControlls} />
                     
                     <Stack.Screen name="RoboticEndScreen" component={RoboticEndUI} />
+
                     <Stack.Screen name="SettingScreen" component={SettingScreen} />
+                    <Stack.Screen name="CallLogScreen" component={CallLogScreen} />
                   
             </Stack.Navigator>
 

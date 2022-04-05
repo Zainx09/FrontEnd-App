@@ -7,7 +7,7 @@ import 'react-native-gesture-handler';
 
 import React from 'react';
 import { useState , useEffect, useContext} from 'react';
-import { StyleSheet, Text, View , TouchableOpacity , Dimensions, TextInput, BackHandler, Alert, Clipboard, ToastAndroid, Image} from 'react-native';
+import { StyleSheet, Text, View , TouchableOpacity , Dimensions, BackHandler, Alert, Clipboard, ToastAndroid, Image} from 'react-native';
 import {StackActions} from '@react-navigation/native';
 import Pusher from 'pusher-js/react-native';
 
@@ -28,6 +28,9 @@ import { setUpdateIntervalForType, SensorTypes, accelerometer ,gyroscope, orient
 
 import Ably from "ably";
 
+//RN Paper
+import { TextInput, Button } from 'react-native-paper';
+
 import { ChannelContext } from '../../../App';
 
 // const ably = new Ably.Realtime('4WmoOg.4SZS1g:w84M-soVmVHhJSbjdeEryB9MYYMIQ3WZSJVnEdMOsu4');
@@ -39,7 +42,13 @@ const windowHeight = Dimensions.get('window').height;
 const VideoCallHeight = windowHeight*(70/100);
 const buttonsHeight = windowHeight*(30/100);
 
+
+
 export default function VideoCallScreenWithControlls({ route, navigation }){
+
+    //for Button
+    const [loading , setLoading] = useState(false);
+    const [disable , setDisable] = useState(false);
 
     const {control} = route.params;
 
@@ -47,7 +56,7 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
       ToastAndroid.showWithGravity(
         msg,
         ToastAndroid.SHORT,
-        ToastAndroid.BOTTOM
+        ToastAndroid.CENTER
       );
     };
 
@@ -121,12 +130,9 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
             style: "cancel"
           },
           { text: "YES", onPress: () => {
-            // BackHandler.exitApp()
-            // navigation.dispatch(
-            //       StackActions.replace('HomePageScreen'))
-            // navigation.navigate('UserEndScreen')
-            setVideoCall(false)
+            setVideoCall(false);
           }}
+          
         ]);
         return true;
       }else if(callOption !== null){
@@ -147,7 +153,7 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
       );
   
       return () => backHandler.remove();
-    }, [videoCall]);
+    }, [videoCall, callOption]);
 
     ///////////////// Video Call //////////////////////
 
@@ -247,16 +253,18 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
 
   //address of joystick's bluetooth 00:18:E4:40:00:06
  
+
   async function connect_Bt(){
+    setLoading(true); setDisable(true);
     try{
       let en = await BluetoothSerial.isEnabled();
 
       if(!en){
+        setLoading(false); setDisable(false);
         showToastWithGravity("Please Enable Bluetooth.")
         // console.log("Please Enable Bluetooth.")
         return
       }
-
       await BluetoothSerial.connect("00:18:E4:40:00:06");
 
       let check = BluetoothSerial.isConnected();
@@ -264,20 +272,17 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
       if (check){
         setConnected(true);
         showToastWithGravity("Connected")
-        // console.log('Connected')
-        
       }else{
-        showToastWithGravity("Something Went Wrong")
+        setLoading(false); setDisable(false);
+        showToastWithGravity("Please Try Again!")
         setConnected(false);
       }
-      
+
     }catch(err){
+      setLoading(false); setDisable(false);
       setConnected(false);
       showToastWithGravity(err.message)
-      // console.log('Error ------ ' , err)
-      
-    }
-    
+    } 
   }
 
   async function readData(){
@@ -422,19 +427,28 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
         callOption==='join' ? 
           <View style={{flex:1 , justifyContent:'center' ,alignItems:'center',  backgroundColor:'white'}}>
             
-              <TextInput
-                style={{width:'85%', height:60, marginBottom:"10%", paddingHorizontal:10, textAlign:'center', borderColor: '#6e8aa1', borderWidth:4, borderRadius:10 ,color:'#848484', fontSize:14 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
-                placeholder="Please type ID to Join the Call"
-                placeholderTextColor = 'lightgray'
-                onChangeText={(text)=>{setCallID(text)}}
-              />
+            <TextInput
+              style={{width:'85%',fontSize:13 , fontFamily:'sans-serif-medium' , fontWeight:'bold', marginBottom:20}}
+              placeholder="Type Call ID Here"
+              placeholderTextColor = 'lightgray'
+              onChangeText={(text)=>{setCallID(text)}}
+              mode="outlined"
+              label="Call ID"
+              left={<TextInput.Icon name="call-made" size={20} color="#9366f4"/>}
+            />
 
-              <TouchableOpacity 
-                  style={[styles.buttonStyle1 , {height:80, width:'55%', borderWidth:4}]}
-                  onPress={()=>checkId(callID)}
-                  >
-                  <Text style={{color:'#ececec' ,fontSize:20 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Join Call</Text>
-              </TouchableOpacity>
+            <Button 
+                style={callID ? [styles.buttonStyle1 , {height:60, width:'55%', borderWidth:3, backgroundColor:'#9366f4', borderColor:'#8152e5'}]: [styles.buttonStyle1 , {height:60, width:'55%', borderWidth:3, backgroundColor:'darkgray', borderColor:'gray'}]}
+                labelStyle={{color:'white' ,fontSize:14 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
+                icon="connection"
+                mode="contained" 
+                loading={loading}
+                disabled={callID? disable : true}
+                uppercase={false}
+                onPress={()=>checkId(callID)}>
+                
+                    Join Call
+            </Button>
 
           </View>
 
@@ -460,26 +474,39 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
               <AgoraUIKit rtcProps={rtcProps} callbacks={callbacks} /> 
           :
 
-            <View style={{flex:1 , justifyContent:'center', alignItems:'center', backgroundColor:'white'}}>
+            <View style={{flex:1 , justifyContent:'center', alignItems:'center'}}>
 
-                <Text style={{color:'#373738' ,fontSize:20 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Share ID with others to join this Call</Text>
+              <View style={{width:'90%', height:'50%',paddingVertical:'10%', justifyContent:'space-around', alignItems:'center', backgroundColor:'white', borderColor:'darkgray', borderWidth:3, borderRadius:20}}>
+                <Text style={{color:'gray' ,fontSize:16 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Share ID With Others</Text>
 
                 <TouchableOpacity 
+                  style={{width:'90%'}}
                   onPress={() =>{
                     Clipboard.setString(rtcProps.appId)
                     showToastWithGravity("Copied!")
                   }}>
-                  <Text style={{fontSize:19, color:'black', marginVertical:20, fontStyle:'italic'}}>{rtcProps.appId}</Text>
+
+                    <View style={{flexDirection:'row', alignItems:'center', borderTopWidth:2 , borderBottomWidth:2, paddingVertical:5, borderColor:'gray'}}>
+                      <Text style={{width:'85%', color:'darkgray' ,fontSize:15 , fontFamily:'sans-serif-medium' , fontWeight:'bold', fontStyle:'italic', borderRightWidth:1, paddingRight:10, marginRight:10}}>ID : {rtcProps.appId}</Text>
+                      <MIcon 
+                        name="content-copy" 
+                        size={25} 
+                        color={'gray'} />
+                    </View>
+                  
                 </TouchableOpacity>
 
-
-                <TouchableOpacity 
-                    style={[styles.buttonStyle1 , {width:'55%', borderWidth:4}]}
-                    onPress={()=>setVideoCall(true)}
-                    >
-                    <Text style={{color:'#ececec' ,fontSize:20 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Start Call</Text>
-                </TouchableOpacity>
-
+                <Button 
+                    style={[styles.buttonStyle1 , {height:60, width:'55%', borderWidth:3, backgroundColor:'#9366f4', borderColor:'#8152e5', borderRadius:10}]}
+                    labelStyle={{color:'white' ,fontSize:14 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
+                    icon="call-made"
+                    mode="contained" 
+                    uppercase={false}
+                    onPress={()=>setVideoCall(true)}>
+                    
+                        Start Call
+                </Button>
+              </View>
             </View>
       
         :
@@ -519,44 +546,57 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
               
 
         // </View>
+        <View style={{flex:1, alignItems:'center', justifyContent:'space-evenly'}}> 
 
-        <View style={{width:'90%' , height:"85%", backgroundColor:'white', borderWidth:3, borderRadius:20, borderColor:'darkgray', alignItems:'center', justifyContent:'space-evenly', alignSelf:'center', marginTop:"15%"}}>
-          <View style={{flexDirection:'row'}}>
-            <MIcon 
-              name="robot-outline" 
-              size={25} 
-              color={'gray'} />
+          <View style={{width:'90%' , height:'70%' , backgroundColor:'white', borderWidth:3, borderRadius:20, borderColor:'darkgray', alignItems:'center', justifyContent:'space-around'}}>
+
             <Text style={[styles.textStyle , {fontWeight:'bold', color:'gray', fontSize:18, marginLeft:10}]}>{control ? "With Navigation" : "Without Navigation"}</Text>
-          </View>
-          
-          <Image 
-            source={require("../../Animations/RoboticEnd2.gif")}  
-            style={{width:'70%', height:'50%'}}
-          />
+            
+            <Image 
+              source={control ? require("../../Animations/withNavigation.gif") : require("../../Animations/withoutNavigation.gif")}  
+              style={control ? {width:'40%', height:'30%'} : {width:'60%', height:'50%'}}
+            />
 
-          <View style={{flexDirection:'column', width:'100%', height:'25%', justifyContent:'space-evenly', alignItems:'center'}}>
-            <TouchableOpacity 
-              style={[styles.buttonStyle , { backgroundColor:'#d53ca5', borderColor:'#c72f97', borderWidth:3, flexDirection:'row'}]} 
-              onPress={()=>{CallOptions('join')}}>
-                <MIcon 
-                  name="call-merge" 
-                  size={20} 
-                  color={'white'} />
-                <Text style={[styles.textStyle , {marginLeft:5}]}>Join Call</Text>
-            </TouchableOpacity>
+            <View style={{flexDirection:'column', width:'100%', height:'30%', justifyContent:'space-evenly', alignItems:'center'}}>
+              <TouchableOpacity 
+                style={[styles.buttonStyle , { backgroundColor:'#a88ed6', borderColor:'#9072c5', borderWidth:3, flexDirection:'row'}]} 
+                onPress={()=>{CallOptions('join')}}>
+                  <MIcon 
+                    name="call-merge" 
+                    size={20} 
+                    color={'white'} />
+                  <Text style={[styles.textStyle , {marginLeft:5}]}>Join Call</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={[styles.buttonStyle , {backgroundColor:'#d53ca5', borderColor:'#c72f97', borderWidth:3, flexDirection:'row'}]} 
-              onPress={()=>{CallOptions('create')}}>
-                <MIcon 
-                  name="call-made" 
-                  size={16} 
-                  color={'white'} />
-                <Text style={[styles.textStyle , {marginLeft:5}]}>Create Call</Text>
-            </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.buttonStyle , {backgroundColor:'#a88ed6', borderColor:'#9072c5', borderWidth:3, flexDirection:'row'}]} 
+                onPress={()=>{CallOptions('create')}}>
+                  <MIcon 
+                    name="call-made" 
+                    size={20} 
+                    color={'white'} />
+                  <Text style={[styles.textStyle , {marginLeft:5}]}>Create Call</Text>
+              </TouchableOpacity>
+              
+            </View>
             
           </View>
+
+          {!control && 
           
+            <Button 
+              style={{width:'75%', height:'10%', backgroundColor:'darkgray', borderColor:'gray', borderWidth:3, borderRadius:10, flexDirection:'row', alignItems:'center' , justifyContent:'center'}} 
+              labelStyle={{color:'white', fontSize:13, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
+              uppercase={false}
+              mode="contained" 
+              icon='bluetooth'
+              loading={loading}
+              disabled={disable}
+              onPress={()=>connect_Bt()}>
+                
+                Connect Controller
+            </Button>
+          }
         </View>
 
       }

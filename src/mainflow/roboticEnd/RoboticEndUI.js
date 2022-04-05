@@ -220,15 +220,9 @@ export default function RoboticEndUI({navigation}){
           style: "cancel"
         },
         { text: "YES", onPress: () => {
-          // BackHandler.exitApp()
-          // navigation.dispatch(
-          //       StackActions.replace('HomePageScreen'))
-          // navigation.navigate('HomePageScreen')
-          
           setVideoCall(false);
-          
-          
         }}
+
       ]);
       return true;
     }else if(callOption !== null){
@@ -357,14 +351,14 @@ export default function RoboticEndUI({navigation}){
 
   ////////////////// Bluetooth Code ////////////////////
 
-  const [connected , setConnected] = useState(true);
+  const [connected , setConnected] = useState(false);
 
 
   const showToastWithGravity = (msg) => {
     ToastAndroid.showWithGravity(
       msg,
       ToastAndroid.SHORT,
-      ToastAndroid.BOTTOM
+      ToastAndroid.CENTER
     );
   };
  
@@ -464,33 +458,26 @@ export default function RoboticEndUI({navigation}){
         <View style={{flex:1 , justifyContent:'center' ,alignItems:'center',  backgroundColor:'white'}}>
           
               <TextInput
-                style={{width:'85%',fontSize:14 , fontFamily:'sans-serif-medium' , fontWeight:'bold', marginBottom:20}}
+                style={{width:'85%',fontSize:13 , fontFamily:'sans-serif-medium' , fontWeight:'bold', marginBottom:20}}
                 placeholder="Type Call ID Here"
                 placeholderTextColor = 'lightgray'
                 onChangeText={(text)=>{setCallID(text)}}
                 mode="outlined"
                 label="Call ID"
-                left={<TextInput.Icon name="call-made" size={20} color="gray"/>}
+                left={<TextInput.Icon name="call-made" size={20} color="#9366f4"/>}
               />
-
-              {/* <TouchableOpacity 
-                  style={[styles.buttonStyle1 , {height:80, width:'55%', borderWidth:4}]}
-                  onPress={()=>checkId(callID)}
-                  >
-                  <Text style={{color:'#ececec' ,fontSize:20 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Join Call</Text>
-              </TouchableOpacity> */}
- 
               <Button 
-                    style={callID ? [styles.buttonStyle1 , {height:60, width:'55%', borderWidth:3, backgroundColor:'#9366f4', borderColor:'#8152e5'}]: [styles.buttonStyle1 , {height:60, width:'55%', borderWidth:3, backgroundColor:'darkgray', borderColor:'gray'}]}
-                    labelStyle={{color:'white' ,fontSize:14 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
-                    icon="connection"
-                    mode="contained" 
-                    loading={loading}
-                    disabled={callID? disable : true}
-                    onPress={()=>checkId(callID)}>
-                    
-                        Join Call
-                </Button>
+                  style={callID ? [styles.buttonStyle1 , {height:60, width:'55%', borderWidth:3, backgroundColor:'#9366f4', borderColor:'#8152e5'}]: [styles.buttonStyle1 , {height:60, width:'55%', borderWidth:3, backgroundColor:'darkgray', borderColor:'gray'}]}
+                  labelStyle={{color:'white' ,fontSize:13 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
+                  uppercase={false}
+                  icon="connection"
+                  mode="contained" 
+                  loading={loading}
+                  disabled={callID? disable : true}
+                  onPress={()=>checkId(callID)}>
+                  
+                      Join Call
+              </Button>
 
         </View>
 
@@ -511,133 +498,42 @@ export default function RoboticEndUI({navigation}){
           
           :
 
-          <View style={{flex:1 , justifyContent:'center', alignItems:'center', backgroundColor:'white'}}>
+          <View style={{flex:1 , justifyContent:'center', alignItems:'center'}}>
 
-              <Text style={{color:'#373738' ,fontSize:20 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Share ID with others to join this Call</Text>
+              <View style={{width:'90%', height:'50%',paddingVertical:'10%', justifyContent:'space-around', alignItems:'center', backgroundColor:'white', borderColor:'darkgray', borderWidth:3, borderRadius:20}}>
+                <Text style={{color:'gray' ,fontSize:16 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Share ID With Others</Text>
 
-              <TouchableOpacity 
-                onPress={() =>{
-                  Clipboard.setString(rtcProps.appId)
-                  showToastWithGravity("Copied!")
-                }}>
-                <Text style={{fontSize:19, color:'black', marginVertical:20, fontStyle:'italic'}}>{rtcProps.appId}</Text>
-              </TouchableOpacity>
+                <TouchableOpacity 
+                  style={{width:'90%'}}
+                  onPress={() =>{
+                    Clipboard.setString(rtcProps.appId)
+                    showToastWithGravity("Copied!")
+                  }}>
 
+                    <View style={{flexDirection:'row', alignItems:'center', borderTopWidth:2 , borderBottomWidth:2, paddingVertical:5, borderColor:'gray'}}>
+                      <Text style={{width:'85%', color:'darkgray' ,fontSize:15 , fontFamily:'sans-serif-medium' , fontWeight:'bold', fontStyle:'italic', borderRightWidth:1, paddingRight:10, marginRight:10}}>ID : {rtcProps.appId}</Text>
+                      <MIcon 
+                        name="content-copy" 
+                        size={25} 
+                        color={'gray'} />
+                    </View>
+                  
+                </TouchableOpacity>
 
-              <TouchableOpacity 
-                  style={[styles.buttonStyle1 , {width:'55%', borderWidth:4}]}
-                  onPress={()=>setVideoCall(true)}
-                  >
-                  <Text style={{color:'#ececec' ,fontSize:20 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Start Call</Text>
-              </TouchableOpacity>
-
-          </View>
+                <Button 
+                    style={[styles.buttonStyle1 , {height:60, width:'55%', borderWidth:3, backgroundColor:'#d53ca5', borderColor:'#c72f97', borderRadius:10}]}
+                    labelStyle={{color:'white' ,fontSize:14 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
+                    icon="call-made"
+                    mode="contained" 
+                    uppercase={false}
+                    onPress={()=>setVideoCall(true)}>
+                    
+                        Start Call
+                </Button>
+              </View>
+            </View>
     
       :
-      
-      // <View style={{flex:1 , alignItems:'center' , justifyContent:'space-evenly', backgroundColor:'white'}}>
-  
-      //         <Text style={{color:'#848484', fontSize:25 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Robotic End</Text>
-              
-      //         <TouchableOpacity 
-      //             style={[styles.buttonStyle1, {height:'16%'}]}
-      //             onPress={()=>{
-      //               CallOptions('join')
-      //               // setCallOption('join')
-      //             }}
-      //             >
-      //             <Text style={{color:'white', fontSize:18 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Join Call</Text>
-      //         </TouchableOpacity>
-
-      //         <TouchableOpacity 
-      //             style={[styles.buttonStyle1, {height:'16%'}]}
-      //             onPress={()=>{
-      //               CallOptions('create')
-      //               // setCallOption('create')
-      //             }}
-      //             >
-      //             <Text style={{color:'white', fontSize:18 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Create Call</Text>
-      //         </TouchableOpacity>
-
-      //         <TouchableOpacity 
-      //             style={styles.buttonStyle1}
-      //             onPress={()=>connect_Bt()}
-      //             >
-      //             <Text style={{color:'white', fontSize:18 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Connect Bluetooth</Text>
-      //         </TouchableOpacity>
-
-      //         {/* <TouchableOpacity 
-      //             style={{width:'80%', height:60, marginVertical:20,  alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black' , backgroundColor:'lightblue'}}
-      //             onPress={()=>BT_List()}
-      //             >
-      //             <Text style={{color:'black', fontSize:15}}>Bluetooth List</Text>
-      //         </TouchableOpacity> */}
-
-      //         {connected 
-      //           &&
-      //         <>
-              
-      //         <Text style={{color:'#373738', fontSize:15 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>
-      //           Test Movements
-      //         </Text>
-
-      //         <View style={{width:'100%' , height:'8%' , flexDirection:'row' , justifyContent:'space-evenly'}}>
-
-      //           <TouchableOpacity 
-      //               style={styles.testMovement}
-      //               onPressIn={()=>write_data('F')} onPressOut={()=>write_data("C")}
-      //               >
-      //               <Text style={{color:'#373738', fontSize:12, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>GO</Text>
-      //           </TouchableOpacity>
-
-      //           <TouchableOpacity 
-      //               style={styles.testMovement}
-      //               onPressIn={()=>write_data('B')} onPressOut={()=>write_data("C")}
-      //               >
-      //               <Text style={{color:'#373738', fontSize:12, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>BACK</Text>
-      //           </TouchableOpacity>
-
-      //         </View>
-
-      //         <Text style={{color:'#373738', fontSize:15 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>
-      //           Test Head Rotation
-      //         </Text>
-
-      //         <View style={{width:'100%' , height:'8%' , flexDirection:'row' , justifyContent:'space-evenly'}}>
-
-      //           <TouchableOpacity 
-      //               style={styles.testMovement}
-      //               onPressIn={()=>write_data('a')} onPressOut={()=>write_data("c")}
-      //               >
-      //               <Text style={{color:'#373738', fontSize:12, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>UP</Text>
-      //           </TouchableOpacity>
-
-      //           <TouchableOpacity 
-      //               style={styles.testMovement}
-      //               onPressIn={()=>write_data('d')} onPressOut={()=>write_data("h")}
-      //               >
-      //               <Text style={{color:'#373738', fontSize:12, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>LEFT</Text>
-      //           </TouchableOpacity>
-
-      //         </View>
-      //         </>}
-
-
-      //         {/* <TouchableOpacity 
-      //             style={{width:'60%', height:80, marginVertical:20,  alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black' , backgroundColor:'green'}}
-      //             onPressIn={()=>write_data('F')} onPressOut={()=>write_data("C")}
-      //             >
-      //             <Text style={{color:'black', fontSize:15}}>Check Forward Drive</Text>
-      //         </TouchableOpacity>
-
-      //         <TouchableOpacity 
-      //             style={{width:'60%', height:80, marginVertical:20,  alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black' , backgroundColor:'green'}}
-      //             onPressIn={()=>write_data('a')} onPressOut={()=>write_data("l")}
-      //             >
-      //             <Text style={{color:'black', fontSize:15}}>Check Servo Angles</Text>
-      //         </TouchableOpacity> */}
-
-      // </View>
         
       <View style={{flex:1 , alignItems:'center' , justifyContent:'space-evenly'}}>
 
@@ -675,7 +571,7 @@ export default function RoboticEndUI({navigation}){
                   color={'white'} />
                 <Text style={[styles.textStyle , {marginLeft:5}]}>Create Call</Text>
             </TouchableOpacity>
-            
+
           </View>
           
         </View>
@@ -730,37 +626,31 @@ export default function RoboticEndUI({navigation}){
                </View>
                
               :
-              // <TouchableOpacity 
-              //   style={[styles.buttonStyle1 , {flexDirection:'row'}]}
-              //   onPress={()=>connect_Bt()}
-              //   >
-              //     <MIcon 
-              //       name="bluetooth" 
-              //       size={25} 
-              //       color={'white'} />
-              //     <Button 
-              //       style={{height:'100%', justifyContent:'center'}}
-              //       labelStyle={{color:'white', fontSize:13, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
-              //       mode="Outlined" 
-              //       loading={loading}
-              //       disabled={disable}>
-                      
-              //         Connect Bluetooth
-              //     </Button>
-              //     {/* <Text style={{color:'white', fontSize:18 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Connect Bluetooth</Text> */}
-              // </TouchableOpacity>
+
+              // <Button 
+              //   style={styles.buttonStyle1}
+              //   labelStyle={{color:'white', fontSize:13, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
+              //   mode="contained" 
+              //   icon='bluetooth'
+              //   loading={loading}
+              //   disabled={disable}
+              //   compact={true}
+              //   onPress={()=>connect_Bt()}>
+                  
+              //     CONNECT ROBOT
+              // </Button>
 
               <Button 
-                style={styles.buttonStyle1}
-                labelStyle={{color:'white', fontSize:13, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
-                mode="contained" 
-                icon='bluetooth'
-                loading={loading}
-                disabled={disable}
-                compact={true}
-                onPress={()=>connect_Bt()}>
-                  
-                  CONNECT ROBOT
+              style={{width:'75%', height:'10%', backgroundColor:'darkgray', borderColor:'gray', borderWidth:3, borderRadius:10, flexDirection:'row', alignItems:'center' , justifyContent:'center'}} 
+              labelStyle={{color:'white', fontSize:13, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
+              uppercase={false}
+              mode="contained" 
+              icon='bluetooth'
+              loading={loading}
+              disabled={disable}
+              onPress={()=>connect_Bt()}>
+                
+                Connect Robot
               </Button>
             }
 

@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
 import React , {useEffect, useState} from 'react';
-import { StyleSheet, Text, View , TouchableOpacity, BackHandler, Image, FlatList, Dimensions} from 'react-native';
+import { StyleSheet, Text, View , TouchableOpacity, BackHandler, Image, FlatList, Dimensions, LayoutAnimation, Platform, UIManager} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -49,6 +49,9 @@ const windowWidth = Dimensions.get('window').width;
 const cardWidth = windowWidth*(90/100);
 const cardMargin = windowWidth*(5/100);
 
+if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental){
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 export default function HomePage({navigation}){
 
@@ -113,109 +116,14 @@ export default function HomePage({navigation}){
         // navigation.navigate('SplashScreen')
         
       }
-      // else if(command === 'logout'){
-      //   await AsyncStorage.removeItem('token');
-      //   navigation.dispatch(
-      //     StackActions.replace('SignInScreen'))
-      //   // navigation.navigate('SplashScreen')
-        
-      // }
     }
 
     return (
-      
-      // <View style={{flex:1, alignItems:'center' , justifyContent:'space-evenly', backgroundColor:'#ffffff'}}>
-
-      //   <TouchableOpacity 
-      //     style={styles.buttonStyle}
-      //     onPress={()=>{goToScreen('userEnd')}}
-      //     >
-      //     <Text style={{color:'white', fontSize:20 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>User End</Text>
-      //   </TouchableOpacity>
-  
-  
-      //   <TouchableOpacity 
-      //   style={styles.buttonStyle}
-      //   onPress={()=>{goToScreen('roboticEnd')}}
-      //   >
-      //     <Text style={{color:'white', fontSize:20 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Robotic End</Text>
-      //   </TouchableOpacity>
-  
-      //   <TouchableOpacity 
-      //   style={[styles.buttonStyle, {height:'20%'}]}
-      //   onPress={()=>{goToScreen('settings')}}
-      //   >
-      //     <Text style={{color:'white', fontSize:20 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Settings</Text>
-      //   </TouchableOpacity>
-          
-      // </View>
-
-
-      // <View style={{flex:1, justifyContent:'space-around', alignItems:'center', backgroundColor:'lightgray'}}>
-      //   <TouchableOpacity 
-      //     style={styles.animationStyle} 
-      //     onPress={()=>{goToScreen('userEnd')}}>
-      //   <Image 
-      //         source={require('../Animations/UserEnd.gif')}  
-      //         style={{width:'40%', height:'80%'}}
-      //       />
-      //     <Text style={styles.textStyle}>USER END</Text>
-
-      //   </TouchableOpacity>
-
-      //   <TouchableOpacity 
-      //     style={styles.animationStyle}
-      //     onPress={()=>{goToScreen('roboticEnd')}}>
-      //   <Image 
-      //         source={require('../Animations/RoboticEnd.gif')}  
-      //         style={{width:'60%', height:'80%'}}
-      //       />
-      //     <Text style={styles.textStyle}>ROBOTIC END</Text>
-
-      //   </TouchableOpacity>
-
-      //   <TouchableOpacity 
-      //     style={[styles.animationStyle , {height:'23%'}]}
-      //     onPress={()=>{goToScreen('settings')}}>
-      //   <Image 
-      //         source={require('../Animations/Extras.gif')}  
-      //         style={{width:'40%', height:'80%'}}
-      //       />
-      //     <Text style={styles.textStyle}>EXTRAS</Text>
-
-      //   </TouchableOpacity>
-
-      // </View>
 
       <View style={{flex:1 , alignItems:'center' , justifyContent:'space-around', backgroundColor:'#f0f0f0'}}>
         <View style={{width:'90%' , height:'10%', backgroundColor:'white', borderWidth:3, borderRadius:20, borderColor:'gray', alignItems:'center', justifyContent:'center'}}>
           <Text style={[styles.textStyle , {fontWeight:'bold', color:'gray', fontSize:17}]}>Hello ZAIN!</Text>
         </View>
-
-        {/* <View style={{width:'90%' , height:'65%', backgroundColor:'white', borderWidth:3, borderRadius:20, borderColor:'gray', alignItems:'center', justifyContent:'space-evenly'}}>
-          <Image 
-            source={bottomButton === 'user' ? require('../Animations/UserEnd.gif') 
-              : bottomButton === 'robot' ? require('../Animations/RoboticEnd.gif') 
-              : require('../Animations/Extras.gif') }  
-            style={{width:'50%', height:'60%'}}
-          />
-
-          <Text style={[styles.textStyle , {color:'gray'}]}>{bottomButton === 'user' ? "You are using this Phone!" : bottomButton === 'robot' ? "Mount this Phone on Robotic Head!" : "Extras!"}</Text>
-
-          <TouchableOpacity 
-            style={styles.buttonStyle} 
-            onPress={()=>{
-              if(bottomButton==='user'){
-                goToScreen('userEnd')
-              }else if(bottomButton==='robot'){
-                goToScreen('roboticEnd')
-              }
-            }}
-            >
-              <Text style={styles.textStyle}>Let's Start</Text>
-
-          </TouchableOpacity>
-        </View> */}
 
         <View style={{height:'65%'}}>
           <FlatList
