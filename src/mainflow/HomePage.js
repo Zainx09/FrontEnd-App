@@ -1,5 +1,5 @@
 import 'react-native-gesture-handler';
-import React , {useEffect, useState} from 'react';
+import React , {useEffect, useState, useContext} from 'react';
 import { StyleSheet, Text, View , TouchableOpacity, BackHandler, Image, FlatList, Dimensions, LayoutAnimation, Platform, UIManager} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -53,7 +53,14 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+import { AllContext } from '../../App';
+
 export default function HomePage({navigation}){
+
+    //useContext for user data
+    const {UserData} = useContext(AllContext);
+    const [userData, setUserData] = UserData;
+    
 
     //Bottom Buttons
     const [bottomButton , setBottomButton] = useState('user');
@@ -75,14 +82,14 @@ export default function HomePage({navigation}){
     }
 
     const Item = ({ name, title, src, btnText, screen }) => (
-      <View style={{width:cardWidth , height:'100%', backgroundColor:'white', borderWidth:3, borderRadius:20, borderColor:'gray', alignItems:'center', justifyContent:'space-evenly', marginHorizontal:cardMargin}}>
-        <Text style={[styles.textStyle , {fontWeight:'bold', color:'gray'}]}>{name}</Text>
+      <View style={{width:cardWidth , height:'100%', backgroundColor:'white', borderWidth:1, borderRadius:5, borderColor:'darkgray', alignItems:'center', justifyContent:'space-evenly', marginHorizontal:cardMargin}}>
+        <Text style={[styles.textStyle , {fontWeight:'bold', color:'#0d6e75'}]}>{name}</Text>
         <Image 
           source={src}  
           style={{width:'40%', height:'50%'}}
         />
     
-        <Text style={[styles.textStyle , {color:'gray'}]}>{title}</Text>
+        <Text style={[styles.textStyle , {color:'#858585'}]}>{title}</Text>
     
         <TouchableOpacity 
           style={styles.buttonStyle} 
@@ -120,9 +127,9 @@ export default function HomePage({navigation}){
 
     return (
 
-      <View style={{flex:1 , alignItems:'center' , justifyContent:'space-around', backgroundColor:'#f0f0f0'}}>
-        <View style={{width:'90%' , height:'10%', backgroundColor:'white', borderWidth:3, borderRadius:20, borderColor:'gray', alignItems:'center', justifyContent:'center'}}>
-          <Text style={[styles.textStyle , {fontWeight:'bold', color:'gray', fontSize:17}]}>Hello ZAIN!</Text>
+      <View style={{flex:1 , alignItems:'center' , justifyContent:'space-evenly', backgroundColor:'#f7f7f7'}}>
+        <View style={{width:'90%' , height:'10%', backgroundColor:'white', borderWidth:1, borderRadius:5, borderColor:'darkgray', alignItems:'center', justifyContent:'center'}}>
+          <Text style={[styles.textStyle , {fontWeight:'bold', color:'#0d6e75', fontSize:17}]}>Hello {userData.username}</Text>
         </View>
 
         <View style={{height:'65%'}}>
@@ -140,7 +147,7 @@ export default function HomePage({navigation}){
         </View>
         
 
-        <View style={{width:'90%' , height:'15%', flexDirection:'row', backgroundColor:'white', borderWidth:3, borderRadius:20, borderColor:'gray', alignItems:'center', justifyContent:'center'}}>
+        <View style={{width:'90%' , height:'15%', flexDirection:'row', backgroundColor:'white', borderWidth:1, borderRadius:5, borderColor:'darkgray', alignItems:'center', justifyContent:'center'}}>
 
             <TouchableOpacity 
               style={styles.bottomButtons}
@@ -194,14 +201,13 @@ export default function HomePage({navigation}){
 const styles = StyleSheet.create({
 
   buttonStyle:{
-    width:'85%', 
-    height:'14%', 
+    width:'60%', 
+    height:'12%', 
     alignItems:'center', 
     justifyContent:'center', 
     backgroundColor:'#57bec5', 
-    borderWidth:4,
     borderColor:'#14a2ab',
-    borderRadius:10
+    borderRadius:5
   },
   animationStyle:{
     width:'95%', 
@@ -214,7 +220,7 @@ const styles = StyleSheet.create({
   },
   textStyle:{
     color:'white', 
-    fontSize:15,
+    fontSize:13,
     fontFamily:'sans-serif-medium',
     textAlign:'center',
     fontWeight:'bold'

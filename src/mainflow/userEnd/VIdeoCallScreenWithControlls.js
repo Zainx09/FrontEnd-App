@@ -7,7 +7,7 @@ import 'react-native-gesture-handler';
 
 import React from 'react';
 import { useState , useEffect, useContext} from 'react';
-import { StyleSheet, Text, View , TouchableOpacity , Dimensions, BackHandler, Alert, Clipboard, ToastAndroid, Image} from 'react-native';
+import { StyleSheet, Text, View , TouchableOpacity , Dimensions, BackHandler, Alert, Clipboard, ToastAndroid, Image, ActivityIndicator} from 'react-native';
 import {StackActions} from '@react-navigation/native';
 import Pusher from 'pusher-js/react-native';
 
@@ -15,6 +15,7 @@ import pusherConfig from '../pusher.json';
 import AgoraUIKit from 'agora-rn-uikit';
 import agoraConfig from "./AgorarChannels.json"
 
+import Api from '../../api/Api'
 
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import IIcon from 'react-native-vector-icons/Ionicons';
@@ -31,7 +32,7 @@ import Ably from "ably";
 //RN Paper
 import { TextInput, Button } from 'react-native-paper';
 
-import { ChannelContext } from '../../../App';
+import { AllContext } from '../../../App';
 
 // const ably = new Ably.Realtime('4WmoOg.4SZS1g:w84M-soVmVHhJSbjdeEryB9MYYMIQ3WZSJVnEdMOsu4');
 // const channel = ably.channels.get('ABLY');
@@ -45,6 +46,10 @@ const buttonsHeight = windowHeight*(30/100);
 
 
 export default function VideoCallScreenWithControlls({ route, navigation }){
+
+    //useContext for user data
+    const {UserData} = useContext(AllContext);
+    const [userData, setUserData] = UserData;
 
     //for Button
     const [loading , setLoading] = useState(false);
@@ -63,19 +68,19 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
     
     ////////////////// ABLY API ///////////////////////////
 
-    const context = useContext(ChannelContext);
+    const {channels} = useContext(AllContext);
 
 
     ///// For Navigations
     const onSendMessage=(text)=>{
       showToastWithGravity(text)
-      context.channel.publish('MyCommand', text);
+      channels.channel1.publish('MyCommand', text);
     }
 
 
       ////// For Angles
       const sendAngle=(text)=>{ 
-        context.channel2.publish('MyAngles', text);
+        channels.channel2.publish('MyAngles', text);
     }
 
     ////////////////// ABLY API ///////////////////////////
@@ -84,39 +89,150 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
     ///////////////// Video Call //////////////////////
     const [callOption , setCallOption] = useState(null);
     const [callID , setCallID] = useState('')
+    const [callIDJoin , setCallIDJoin] = useState('')
     const [videoCall, setVideoCall] = useState(false);
+
+    const [createCallLoader , setCreateCallLoader] = useState(false)
 
     const [rtcProps, setRtcProps] = useState({})
 
+    const [ callJoinerEmail , setCallJoinerEmail ] = useState('')
+
     // let rtcProps = {};
 
-    function CallOptions(option){
-      setCallOption(option)
+    async function CallOptions(option){
+      
 
       if(option === 'join'){
+        setCallOption(option)
         setRtcProps({
           appId: agoraConfig.appId2,
           token: agoraConfig.token2,
           channel: agoraConfig.channelName2
         })
 
-      }else if(option === 'create'){
-
+      }else if(option === 'create'){    
+        
         setRtcProps({
           appId: agoraConfig.appId,
           token: agoraConfig.token,
           channel: agoraConfig.channelName
         })
+
+        try{
+
+          let today = new Date();
+
+          let dd = today.getDate();
+          let mm = today.getMonth()+1; 
+          let yyyy = today.getFullYear();
+
+          if(dd<10){
+              dd='0'+dd;
+          } 
+
+          if(mm<10){
+              mm='0'+mm;
+          } 
+
+          let hr = today.getHours();
+          let min = today.getMinutes();
+
+          if (min < 10){
+              min = "0" + min;
+          }
+
+          var ampm = "am";
+          if( hr > 12 ){
+              hr -= 12;
+              ampm = "pm";
+          }
+          if( hr === 0 ){
+            hr = 12;
+          }
+
+          today = dd+'-'+mm+'-'+yyyy+" "+hr+":"+min+""+ampm;
+
+          setCreateCallLoader(true);
+
+          const response = await Api.post('/callLog' , { "email":userData.email , "username":userData.username , "type":option , "callJoinId" : "" , "channelName" : agoraConfig.channelName, "today" : today });
+
+          if(response.data){
+            setCallID( response.data.CallId );
+            setCreateCallLoader(false);
+            setCallOption(option)
+          }else{
+            setCreateCallLoader(false);
+            showToastWithGravity("Not Responding")
+          }
+  
+        }catch(err){
+          setCreateCallLoader(false);
+          showToastWithGravity("Can't create call")
+        }
       }
     }
     
-    const callbacks = {EndCall: () => setVideoCall(false)};
+    const callbacks = {EndCall: () => {
 
-    function checkId(Id){
-      if(Id === rtcProps.appId){
-        setVideoCall(true);
+      if(callOption === 'create'){
+        setCallOption(null);
+        setVideoCall(false);
       }else{
-        alert('Please Type Correct ID.')
+        setVideoCall(false);
+      }
+    }};
+
+    async function checkId(Id){
+      setLoading(true)
+      try{
+
+        let today = new Date();
+
+        let dd = today.getDate();
+        let mm = today.getMonth()+1; 
+        let yyyy = today.getFullYear();
+
+        if(dd<10){
+            dd='0'+dd;
+        } 
+
+        if(mm<10){
+            mm='0'+mm;
+        } 
+
+        let hr = today.getHours();
+        let min = today.getMinutes();
+
+        if (min < 10){
+            min = "0" + min;
+        }
+
+        var ampm = "am";
+        if( hr > 12 ){
+            hr -= 12;
+            ampm = "pm";
+        }
+        if( hr === 0 ){
+          hr = 12;
+        }
+
+        today = dd+'-'+mm+'-'+yyyy+" "+hr+":"+min+""+ampm;
+
+        const response = await Api.post('/callLog' , { "email":userData.email , "username":userData.username, "type":'join' , "callJoinId" : Id , "channelName" : agoraConfig.channelName2 , "today" : today});
+  
+        if(response.data){
+          setCallJoinerEmail(response.data.CreatorEmail)
+          setLoading(false)
+          setVideoCall(true);
+        }else{
+          setLoading(false)
+          showToastWithGravity("Invalid Call Id")
+        }
+  
+      }catch(err){
+        setLoading(false)
+        showToastWithGravity("Can't join call")
       }
     }
 
@@ -130,7 +246,13 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
             style: "cancel"
           },
           { text: "YES", onPress: () => {
-            setVideoCall(false);
+            
+            if(callOption === 'create'){
+              setCallOption(null);
+              setVideoCall(false);
+            }else{
+              setVideoCall(false);
+            }
           }}
           
         ]);
@@ -140,7 +262,6 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
         return true;
       }
       return;
-        
     };
   
   
@@ -151,8 +272,24 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
         "hardwareBackPress",
         backAction
       );
+
+      if(videoCall && callOption == 'join'){
+
+        channels.channel4.publish('callJoinerEmail', userData.email);
   
-      return () => backHandler.remove();
+      }else if(videoCall && callOption == 'create'){
+  
+        channels.channel4.subscribe('callJoinerEmail' , (email)=>{
+          setCallJoinerEmail(email.data)
+        });
+      }
+  
+      return () => {
+        backHandler.remove();
+        if(videoCall && callOption == 'create'){
+          channels.channel4.unsubscribe('callJoinerEmail');
+        }
+      }
     }, [videoCall, callOption]);
 
     ///////////////// Video Call //////////////////////
@@ -424,28 +561,28 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
 
       {callOption ? 
         
-        callOption==='join' ? 
+        callOption==='join' && !videoCall ? 
           <View style={{flex:1 , justifyContent:'center' ,alignItems:'center',  backgroundColor:'white'}}>
             
             <TextInput
               style={{width:'85%',fontSize:13 , fontFamily:'sans-serif-medium' , fontWeight:'bold', marginBottom:20}}
               placeholder="Type Call ID Here"
               placeholderTextColor = 'lightgray'
-              onChangeText={(text)=>{setCallID(text)}}
+              onChangeText={(text)=>{setCallIDJoin(text)}}
               mode="outlined"
               label="Call ID"
               left={<TextInput.Icon name="call-made" size={20} color="#9366f4"/>}
             />
 
             <Button 
-                style={callID ? [styles.buttonStyle1 , {height:60, width:'55%', borderWidth:3, backgroundColor:'#9366f4', borderColor:'#8152e5'}]: [styles.buttonStyle1 , {height:60, width:'55%', borderWidth:3, backgroundColor:'darkgray', borderColor:'gray'}]}
+                style={callIDJoin ? [styles.buttonStyle1 , {height:60, width:'55%', borderWidth:3, backgroundColor:'#9366f4', borderColor:'#8152e5'}]: [styles.buttonStyle1 , {height:60, width:'55%', borderWidth:3, backgroundColor:'darkgray', borderColor:'gray'}]}
                 labelStyle={{color:'white' ,fontSize:14 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
                 icon="connection"
                 mode="contained" 
                 loading={loading}
-                disabled={callID? disable : true}
+                disabled={callIDJoin? disable : true}
                 uppercase={false}
-                onPress={()=>checkId(callID)}>
+                onPress={()=>checkId(callIDJoin)}>
                 
                     Join Call
             </Button>
@@ -461,6 +598,9 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
                       <Text style={{color:'black'}}>{data.roll}</Text>
                       <Text style={{color:'black'}}>{data.yaw}</Text>
                   <View style={{height:'65%'}}>
+                    <View style={{backgroundColor:'black'}}>
+                      <Text style={{color:'white' , fontSize:11, fontFamily:'sans-serif-medium' , fontWeight:'bold', alignSelf:'center'}}>{callJoinerEmail.toUpperCase()}</Text>
+                    </View>
                       <AgoraUIKit rtcProps={rtcProps} callbacks={callbacks} /> 
                   </View>
 
@@ -471,7 +611,12 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
 
               </View>
             :
-              <AgoraUIKit rtcProps={rtcProps} callbacks={callbacks} /> 
+              <>
+                <View style={{backgroundColor:'black'}}>
+                  <Text style={{color:'white' , fontSize:11, fontFamily:'sans-serif-medium' , fontWeight:'bold', alignSelf:'center'}}>{callJoinerEmail.toUpperCase()}</Text>
+                </View>
+                <AgoraUIKit rtcProps={rtcProps} callbacks={callbacks} /> 
+              </>
           :
 
             <View style={{flex:1 , justifyContent:'center', alignItems:'center'}}>
@@ -480,14 +625,14 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
                 <Text style={{color:'gray' ,fontSize:16 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Share ID With Others</Text>
 
                 <TouchableOpacity 
-                  style={{width:'90%'}}
+                  style={{width:'70%'}}
                   onPress={() =>{
-                    Clipboard.setString(rtcProps.appId)
+                    Clipboard.setString(callID)
                     showToastWithGravity("Copied!")
                   }}>
 
-                    <View style={{flexDirection:'row', alignItems:'center', borderTopWidth:2 , borderBottomWidth:2, paddingVertical:5, borderColor:'gray'}}>
-                      <Text style={{width:'85%', color:'darkgray' ,fontSize:15 , fontFamily:'sans-serif-medium' , fontWeight:'bold', fontStyle:'italic', borderRightWidth:1, paddingRight:10, marginRight:10}}>ID : {rtcProps.appId}</Text>
+                    <View style={{flexDirection:'row', alignItems:'center', justifyContent:'center', borderTopWidth:2 , borderBottomWidth:2, paddingVertical:10, borderColor:'gray'}}>
+                      <Text style={{width:'60%', color:'darkgray' ,fontSize:15 , fontFamily:'sans-serif-medium' , fontWeight:'bold', fontStyle:'italic', borderRightWidth:1, paddingRight:10, marginRight:10}}>ID :   {callID}</Text>
                       <MIcon 
                         name="content-copy" 
                         size={25} 
@@ -511,41 +656,6 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
       
         :
         
-        // <View style={{flex:1, alignItems:'center' , justifyContent:'space-evenly', backgroundColor:'white'}}>
-
-        //       <Text style={{color:'#848484', fontSize:20 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>{control ? "With Navigation" : "Without Navigation"}</Text>
-
-        //       <TouchableOpacity 
-        //           style={styles.buttonStyle}
-        //           onPress={()=>{
-        //             CallOptions('join')
-        //             // setCallOption('join')
-        //           }}
-        //           >
-        //           <Text style={{color:'white', fontSize:17 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Join Call</Text>
-        //       </TouchableOpacity>
-
-        //       <TouchableOpacity 
-        //           style={styles.buttonStyle}
-        //           onPress={()=>{
-        //             CallOptions('create')
-        //             // setCallOption('create')
-        //           }}
-        //           >
-        //           <Text style={{color:'white', fontSize:17 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Create Call</Text>
-        //       </TouchableOpacity>
-
-        //       { !control &&
-        //         <TouchableOpacity 
-        //             style={[styles.buttonStyle , {height:'14%'}]}
-        //             onPress={()=>connect_Bt()}
-        //             >
-        //             <Text style={{color:'white', fontSize:17 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Connect Controller</Text>
-        //         </TouchableOpacity>
-        //       }
-              
-
-        // </View>
         <View style={{flex:1, alignItems:'center', justifyContent:'space-evenly'}}> 
 
           <View style={{width:'90%' , height:'70%' , backgroundColor:'white', borderWidth:3, borderRadius:20, borderColor:'darkgray', alignItems:'center', justifyContent:'space-around'}}>
@@ -558,7 +668,11 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
             />
 
             <View style={{flexDirection:'column', width:'100%', height:'30%', justifyContent:'space-evenly', alignItems:'center'}}>
-              <TouchableOpacity 
+
+              {createCallLoader ? <ActivityIndicator size="large" color="#a88ed6" /> :
+           
+              <>
+                <TouchableOpacity 
                 style={[styles.buttonStyle , { backgroundColor:'#a88ed6', borderColor:'#9072c5', borderWidth:3, flexDirection:'row'}]} 
                 onPress={()=>{CallOptions('join')}}>
                   <MIcon 
@@ -568,7 +682,7 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
                   <Text style={[styles.textStyle , {marginLeft:5}]}>Join Call</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity 
+                <TouchableOpacity 
                 style={[styles.buttonStyle , {backgroundColor:'#a88ed6', borderColor:'#9072c5', borderWidth:3, flexDirection:'row'}]} 
                 onPress={()=>{CallOptions('create')}}>
                   <MIcon 
@@ -577,6 +691,8 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
                     color={'white'} />
                   <Text style={[styles.textStyle , {marginLeft:5}]}>Create Call</Text>
               </TouchableOpacity>
+              </>
+            }
               
             </View>
             

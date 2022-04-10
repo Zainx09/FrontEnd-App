@@ -5,6 +5,8 @@ import axios from 'axios'
 
 //ngrok provide a url
 export default axios.create({
-    baseURL:'https://bb37-39-50-149-125.ngrok.io'
+    
+    baseURL:'https://fyp-express-server.herokuapp.com/'
+    // baseURL:'http://068f-39-50-226-120.ngrok.io'
 });
 

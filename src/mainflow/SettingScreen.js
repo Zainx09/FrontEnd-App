@@ -27,41 +27,34 @@ export default function SettingScreen({navigation}){
       }
 
     return(
-        <View style={{flex:1, alignItems:'center', justifyContent:'space-evenly'}}>
-          <View style={{width:'90%' , height:'50%' , borderWidth:2, borderColor:'darkgray', backgroundColor:'white', borderRadius:20, justifyContent:'space-evenly' , alignItems:'center'}}>
-            <Text style={[styles.textStyle , {fontWeight:'bold', color:'gray', fontSize:18, marginLeft:10}]}>EXTRAS</Text>
+        <View style={{flex:1, alignItems:'center', justifyContent:'space-evenly', backgroundColor:'#f7f7f7'}}>
+          <View style={{width:'85%' , height:'50%' , borderWidth:1, borderColor:'darkgray', backgroundColor:'white', borderRadius:8, justifyContent:'space-evenly' , alignItems:'center'}}>
+            <Text style={[styles.textStyle , {fontWeight:'bold', color:'gray', fontSize:15, marginLeft:10}]}>EXTRAS</Text>
 
            
 
             <Button 
-              style={{width:'75%', height:'20%', backgroundColor:'#57bec5', borderColor:'#14a2ab', borderWidth:3, borderRadius:10, flexDirection:'row', alignItems:'center' , justifyContent:'center'}} 
+              style={{width:'65%', height:'16%', backgroundColor:'#57bec5', borderColor:'#14a2ab', borderWidth:1, borderRadius:5, flexDirection:'row', alignItems:'center' , justifyContent:'center'}} 
               labelStyle={{color:'white', fontSize:13, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
               uppercase={false}
               mode="contained" 
-              icon='bluetooth'
+              icon='call-made'
               onPress={()=>{goToScreen('callLogs')}}>
                 
                 Call Logs
             </Button>
 
             <Button 
-              style={{width:'75%', height:'20%', backgroundColor:'darkgray', borderColor:'gray', borderWidth:3, borderRadius:10, flexDirection:'row', alignItems:'center' , justifyContent:'center'}} 
-              labelStyle={{color:'white', fontSize:13, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
+              style={{width:'50%', height:'16%', backgroundColor:'white', borderColor:'lightgray', borderWidth:0.2, borderRadius:5, flexDirection:'row', alignItems:'center' , justifyContent:'center'}} 
+              labelStyle={{color:'#a51d1d', fontSize:13, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
               uppercase={false}
               mode="contained" 
               icon='logout'
               onPress={()=>{goToScreen('logout')}}>
                 
-                Call Logs
+                Logout
             </Button>
-      
-      
-            {/* <TouchableOpacity 
-              style={{width:200, height:100, alignItems:'center', justifyContent:'center', borderWidth:1, borderStyle:'solid' , borderColor:'black'}}
-              onPress={()=>{goToScreen('logout')}}
-              >
-              <Text style={{color:'black', fontSize:30}}>Logout</Text>
-            </TouchableOpacity> */}
+    
           </View>
             
 

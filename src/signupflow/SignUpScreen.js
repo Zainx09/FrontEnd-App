@@ -1,7 +1,7 @@
 import React from "react";
-import {View , StyleSheet , Text , TouchableOpacity, KeyboardAvoidingView, ImageBackground, ToastAndroid} from 'react-native';
+import { useState , useEffect, useContext} from 'react';
+import {View , StyleSheet , Text , TouchableOpacity, KeyboardAvoidingView, ImageBackground, ToastAndroid, BackHandler} from 'react-native';
 import Api from '../api/Api'
-import { useState } from 'react';
 import {StackActions} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -17,8 +17,13 @@ const backgroundImage = {
     uri: "https://images.unsplash.com/photo-1561589959-7304f96ce3d0?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=435&q=80"
 };
 
+import { AllContext } from '../../App';
 
 const SignUpScreen=({navigation})=>{
+
+    //useContext for user data
+    const {UserData} = useContext(AllContext);
+    const [userData, setUserData] = UserData;
 
     //for Button
     const [loading , setLoading] = useState(false);
@@ -46,27 +51,40 @@ const SignUpScreen=({navigation})=>{
     async function signUp(){
         if(username!=""){
             if(email!==""){
+                let LowerEmail = email.toLowerCase();
                 if(password.length>3){
                     if(password===rePassword){
-
 
                         try{
                             console.log('Sent');
                             setLoading(true); setDisable(true);
                             
-                            const response = await Api.post('/signup' , { username , email , password });
-                            setToken(response.data.token)
+                            const response = await Api.post('/signup' , { username , "email":LowerEmail , password });
 
-                            await AsyncStorage.setItem('token', response.data.token)
-                            console.log('TOKEN = ',response.data.token)
+                            if(response.data){
+                                
+                                setToken(response.data.token)
+
+                                await AsyncStorage.setItem('token', response.data.token)
+
+                                setUserData({
+                                    "email" : LowerEmail,
+                                    "username" : username
+                                })
+                                
+                                setLoading(false); setDisable(false);
+                                navigation.dispatch(
+                                StackActions.replace('HomePageScreen'))
+                            }else{
+                                
+                                setLoading(false); setDisable(false);
+                                showToastWithGravity('Not Responding')
+                            }
                             
-                            navigation.dispatch(
-                            StackActions.replace('HomePageScreen'))
 
                         }catch(err){
                             setLoading(false); setDisable(false);
                             showToastWithGravity("Something went wrong!")
-                            console.log(err.response.data);
                         }   
   
                     }else{
@@ -83,7 +101,24 @@ const SignUpScreen=({navigation})=>{
         }
     }
 
-    const placeholderColor = 'black';
+
+    const backAction = () => {
+
+        BackHandler.exitApp();
+        return true;
+    };
+
+    useEffect(() => {
+    
+        const backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            backAction
+        );
+
+        return () => backHandler.remove();
+    }, []);
+
+
     return(
         // <View style={styles.container}>
             <ImageBackground source={require("../Animations/SignUpBg.gif")} resizeMode="cover" style={styles.container}>

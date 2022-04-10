@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
 import React from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
@@ -14,7 +14,13 @@ import Api from './api/Api'
 // import MainFlow from './mainflow/MainFlow';
 // import SignUpFlow from './signupflow/SignUpFlow';
 
+import { AllContext } from '../App';
+
 export default function SplashScreen({navigation}){
+
+    //useContext for user data
+    const {UserData} = useContext(AllContext);
+    const [userData, setUserData] = UserData;
 
     async function checkLogin(){
         try{
@@ -23,16 +29,20 @@ export default function SplashScreen({navigation}){
             const token = await AsyncStorage.getItem('token')
             if(token !== null) {
                 const response2 = await Api.post('/checkLogin' , { 'token': token });
-                console.log(response2.data);
                 if(response2.data){
+
+                    setUserData({
+                        "email" : response2.data.email,
+                        "username" : response2.data.username
+                    })
+
                     return(
                         navigation.dispatch(
                             StackActions.replace('HomePageScreen'))
                     )
-                    
-                    // setFlow('MainFlow');
+                
                 }else{
-                    console.log('response Not Get')
+                    console.log('Not Responding')
                     return(
                         navigation.dispatch(
                             StackActions.replace('SignUpScreen'))

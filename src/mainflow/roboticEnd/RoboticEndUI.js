@@ -2,7 +2,7 @@ import 'react-native-gesture-handler';
 import { useState , useEffect, useContext} from 'react';
 import React from 'react';
 import Pusher from 'pusher-js/react-native';
-import { StyleSheet, Text, View , TouchableOpacity , ToastAndroid, Clipboard, BackHandler, Alert, Image} from 'react-native';
+import { StyleSheet, Text, View , TouchableOpacity , ToastAndroid, Clipboard, BackHandler, Alert, Image, ActivityIndicator} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {StackActions} from '@react-navigation/native';
@@ -17,13 +17,15 @@ import MIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AgoraUIKit from 'agora-rn-uikit';
 import agoraConfig from "../userEnd/AgorarChannels.json"
 
+import Api from '../../api/Api'
+
 import pusherConfig from '../pusher.json';
 
 import BluetoothSerial from 'react-native-bluetooth-serial-2'
 
 import Ably from "ably";
 
-import { ChannelContext } from '../../../App';
+import { AllContext } from '../../../App';
 
 // const ably = new Ably.Realtime('4WmoOg.4SZS1g:w84M-soVmVHhJSbjdeEryB9MYYMIQ3WZSJVnEdMOsu4');
 // const channel = ably.channels.get('ABLY'); // for movement
@@ -32,6 +34,10 @@ import { ChannelContext } from '../../../App';
 
 export default function RoboticEndUI({navigation}){
 
+  //useContext for user data
+  const {UserData} = useContext(AllContext);
+  const [userData, setUserData] = UserData;
+
   //for Button
   const [loading , setLoading] = useState(false);
   const [disable , setDisable] = useState(false);
@@ -39,7 +45,7 @@ export default function RoboticEndUI({navigation}){
 
   ////////////////// ABLY API ///////////////////////////
 
-  const context = useContext(ChannelContext);
+  const {channels} = useContext(AllContext);
 
   const [message , setMessage] = useState('');
 
@@ -51,17 +57,17 @@ export default function RoboticEndUI({navigation}){
     // const channel = context.channel;
     // const channel2 = context.channel2;
 
-    context.channel.subscribe('MyCommand' , (message)=>{
+    channels.channel1.subscribe('MyCommand' , (message)=>{
       handleMessage(message.data)
     });
 
-    context.channel2.subscribe('MyAngles' , (angle)=>{
+    channels.channel2.subscribe('MyAngles' , (angle)=>{
       handleAngle(angle.data)
     });
 
     return(()=>{
-      context.channel.unsubscribe('MyCommand');
-      context.channel2.unsubscribe('MyAngles');
+      channels.channel1.unsubscribe('MyCommand');
+      channels.channel2.unsubscribe('MyAngles');
     })
   },[]);
 
@@ -173,14 +179,19 @@ export default function RoboticEndUI({navigation}){
 
   const [callOption , setCallOption] = useState(null);
   const [callID , setCallID] = useState('')
+  const [callIDJoin , setCallIDJoin] = useState('')
   const [videoCall, setVideoCall] = useState(false);
+
+  const [createCallLoader , setCreateCallLoader] = useState(false)
 
   const [rtcProps, setRtcProps] = useState({})
 
+  const [ callJoinerEmail , setCallJoinerEmail ] = useState('')
+
   // let rtcProps = {};
 
-  function CallOptions(option){
-    setCallOption(option)
+  async function CallOptions(option){
+    
 
     if(option === 'join'){
       setRtcProps({
@@ -188,6 +199,7 @@ export default function RoboticEndUI({navigation}){
         token: agoraConfig.token,
         channel: agoraConfig.channelName
       })
+      setCallOption(option)
 
     }else if(option === 'create'){
 
@@ -196,17 +208,123 @@ export default function RoboticEndUI({navigation}){
         token: agoraConfig.token2,
         channel: agoraConfig.channelName2
       })
+
+      try{
+
+        let today = new Date();
+
+        let dd = today.getDate();
+        let mm = today.getMonth()+1; 
+        let yyyy = today.getFullYear();
+
+        if(dd<10){
+            dd='0'+dd;
+        } 
+
+        if(mm<10){
+            mm='0'+mm;
+        } 
+
+        let hr = today.getHours();
+        let min = today.getMinutes();
+
+        if (min < 10){
+            min = "0" + min;
+        }
+
+        var ampm = "am";
+        if( hr > 12 ){
+            hr -= 12;
+            ampm = "pm";
+        }
+        if( hr === 0 ){
+          hr = 12;
+        }
+
+        today = dd+'-'+mm+'-'+yyyy+" "+hr+":"+min+""+ampm;
+
+        setCreateCallLoader(true);
+
+        const response = await Api.post('/callLog' , { "email":userData.email , "username":userData.username , "type":option , "callJoinId" : "" , "channelName" : agoraConfig.channelName2, "today" : today });
+
+        if(response.data){
+          setCallID( response.data.CallId );
+          setCreateCallLoader(false);
+          setCallOption(option)
+        }else{
+          setCreateCallLoader(false);
+          showToastWithGravity("Not Responding")
+        }
+
+      }catch(err){
+        setCreateCallLoader(false);
+        showToastWithGravity("Can't create call")
+      }
     }
   }
 
-  const callbacks = {EndCall: () => setVideoCall(false)};
+  const callbacks = {EndCall: () => {
 
-
-  function checkId(Id){
-    if(Id === rtcProps.appId){
-      setVideoCall(true);
+    if(callOption === 'create'){
+      setCallOption(null);
+      setVideoCall(false);
     }else{
-      alert('Please Type Correct ID.')
+      setVideoCall(false);
+    }
+  }};
+
+
+  async function checkId(Id){
+    setLoading(true)
+    try{
+
+      let today = new Date();
+
+      let dd = today.getDate();
+      let mm = today.getMonth()+1; 
+      let yyyy = today.getFullYear();
+
+      if(dd<10){
+          dd='0'+dd;
+      } 
+
+      if(mm<10){
+          mm='0'+mm;
+      } 
+
+      let hr = today.getHours();
+      let min = today.getMinutes();
+
+      if (min < 10){
+          min = "0" + min;
+      }
+
+      var ampm = "am";
+      if( hr > 12 ){
+          hr -= 12;
+          ampm = "pm";
+      }
+      if( hr === 0 ){
+        hr = 12;
+      }
+
+      today = dd+'-'+mm+'-'+yyyy+" "+hr+":"+min+""+ampm;
+
+      const response = await Api.post('/callLog' , { "email":userData.email , "username":userData.username, "type":'join' , "callJoinId" : Id , "channelName" : agoraConfig.channelName , "today" : today});
+
+
+      if(response.data){
+        setCallJoinerEmail(response.data.CreatorEmail)
+        setLoading(false)
+        setVideoCall(true);
+      }else{
+        setLoading(false)
+        showToastWithGravity("Invalid Call Id")
+      }
+
+    }catch(err){
+      setLoading(false)
+      showToastWithGravity("Can't join call")
     }
   }
 
@@ -220,7 +338,14 @@ export default function RoboticEndUI({navigation}){
           style: "cancel"
         },
         { text: "YES", onPress: () => {
-          setVideoCall(false);
+
+          if(callOption === 'create'){
+            setCallOption(null);
+            setVideoCall(false);
+          }else{
+            setVideoCall(false);
+          }
+          
         }}
 
       ]);
@@ -242,111 +367,29 @@ export default function RoboticEndUI({navigation}){
       backAction
     );
 
-    return () => backHandler.remove();
+    if(videoCall && callOption == 'join'){
+
+      channels.channel4.publish('callJoinerEmail', userData.email);
+
+    }else if(videoCall && callOption == 'create'){
+
+      channels.channel4.subscribe('callJoinerEmail' , (email)=>{
+        setCallJoinerEmail(email.data)
+      });
+    }
+
+    return () => {
+      backHandler.remove();
+      if(videoCall && callOption == 'create'){
+        channels.channel4.unsubscribe('callJoinerEmail');
+      }
+    }
   }, [videoCall, callOption]);
 
   ///////////////// Video Call //////////////////////
 
 
 
-
-  ///////////////// Pusher API /////////////////////////
-  // useEffect(() => {
-  //   const pusher = new Pusher(pusherConfig.key, pusherConfig); // (1)
-  //   const chatChannel = pusher.subscribe('chat_channel'); // (2)
-  //   chatChannel.bind('pusher:subscription_succeeded', () => { // (3)
-  //     chatChannel.bind('join', (data) => { // (4)
-  //       handleJoin(data.name);
-  //     });
-  //     chatChannel.bind('part', (data) => { // (5)
-  //       handlePart(data.name);
-  //     });
-  //     chatChannel.bind('message', (data) => { // (6)
-  //       handleMessage(data.name, data.message);
-  //     });
-  //   });
-
-  //   // Anything in here is fired on component mount.
-  //   fetch(`${pusherConfig.restServer}/users/${'zain'}`, {
-  //     method: 'PUT'
-  //   });
-
-  //   // return () => {
-  //   //   // Anything in here is fired on component unmount.
-  //   //   fetch(`${pusherConfig.restServer}/users/${'zain'}`, {
-  //   //       method: 'DELETE'
-  //   //   });
-  //   // }
-
-  //   return(()=>{
-  //     chatChannel.unsubscribe('chat_channel');
-  //   })
-
-  // }, []);
-
-
-  // const handleJoin=(name)=>{ 
-  //   setMessages({action: 'join', name: name, message: 'Connected'})
-  // }
-    
-  // const handlePart=(name)=>{
-  //   setMessages({action: 'part', name: name , message: 'Disconnected'})
-  // }
-   
-  // const handleMessage=(name, message)=>{
-  //   switch(message) {
-  //     case "LEFT IN":
-  //       write_data('L')
-  //       setMessages({action: 'message', name: name, message: message})
-  //       break;
-
-  //     case "RIGHT IN":
-  //       write_data('R')
-  //       setMessages({action: 'message', name: name, message: message})
-  //       break;
-
-  //     case "GO IN":
-  //       write_data('F')
-  //       setMessages({action: 'message', name: name, message: message})
-  //       break;
-
-  //     case "BACK IN":
-  //       write_data('B')
-  //       setMessages({action: 'message', name: name, message: message})
-  //       break;
-
-  //       case "LEFT OUT":
-  //         write_data('C')
-  //         setMessages({action: 'message', name: name, message: message})
-  //         break;
-  
-  //       case "RIGHT OUT":
-  //         write_data('C')
-  //         setMessages({action: 'message', name: name, message: message})
-  //         break;
-  
-  //       case "GO OUT":
-  //         write_data('C')
-  //         setMessages({action: 'message', name: name, message: message})
-  //         break;
-  
-  //       case "BACK OUT":
-  //         write_data('C')
-  //         setMessages({action: 'message', name: name, message: message})
-  //         break;
-
-  //     default:
-  //       // write_data('C');
-  //       break
-  //   }
-  //   // write_data()
-    
-  // } 
-
-  ///////////////// Pusher API /////////////////////////
-
-
-  
 
 
   ////////////////// Bluetooth Code ////////////////////
@@ -446,35 +489,32 @@ export default function RoboticEndUI({navigation}){
   ////////////////// Bluetooth Code ////////////////////  
 
   return (
-    // <View style={{flex:1}}>
-    //   <Text>{messages?messages.message:'ABCD'}</Text>
-    // </View>
 
     <View style={{flex:1}}> 
 
     {callOption ? 
       
-      callOption==='join' ? 
+      callOption==='join' && !videoCall ? 
         <View style={{flex:1 , justifyContent:'center' ,alignItems:'center',  backgroundColor:'white'}}>
           
               <TextInput
                 style={{width:'85%',fontSize:13 , fontFamily:'sans-serif-medium' , fontWeight:'bold', marginBottom:20}}
                 placeholder="Type Call ID Here"
                 placeholderTextColor = 'lightgray'
-                onChangeText={(text)=>{setCallID(text)}}
+                onChangeText={(text)=>{setCallIDJoin(text)}}
                 mode="outlined"
                 label="Call ID"
                 left={<TextInput.Icon name="call-made" size={20} color="#9366f4"/>}
               />
               <Button 
-                  style={callID ? [styles.buttonStyle1 , {height:60, width:'55%', borderWidth:3, backgroundColor:'#9366f4', borderColor:'#8152e5'}]: [styles.buttonStyle1 , {height:60, width:'55%', borderWidth:3, backgroundColor:'darkgray', borderColor:'gray'}]}
+                  style={callIDJoin ? [styles.buttonStyle1 , {height:60, width:'55%', borderWidth:3, backgroundColor:'#9366f4', borderColor:'#8152e5'}]: [styles.buttonStyle1 , {height:60, width:'55%', borderWidth:3, backgroundColor:'darkgray', borderColor:'gray'}]}
                   labelStyle={{color:'white' ,fontSize:13 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
-                  uppercase={false}
                   icon="connection"
                   mode="contained" 
                   loading={loading}
-                  disabled={callID? disable : true}
-                  onPress={()=>checkId(callID)}>
+                  disabled={callIDJoin? disable : true}
+                  uppercase={false}
+                  onPress={()=>checkId(callIDJoin)}>
                   
                       Join Call
               </Button>
@@ -492,6 +532,10 @@ export default function RoboticEndUI({navigation}){
               <Text style={{color:'black'}}>{z} </Text>
             </View>
             <View style={{height:'88%'}}>
+              <View style={{backgroundColor:'black'}}>
+                <Text style={{color:'white' , fontSize:11, fontFamily:'sans-serif-medium' , fontWeight:'bold', alignSelf:'center'}}>{callJoinerEmail.toUpperCase()}</Text>
+              </View>
+            
               <AgoraUIKit rtcProps={rtcProps} callbacks={callbacks} /> 
             </View>
           </View>
@@ -506,12 +550,12 @@ export default function RoboticEndUI({navigation}){
                 <TouchableOpacity 
                   style={{width:'90%'}}
                   onPress={() =>{
-                    Clipboard.setString(rtcProps.appId)
+                    Clipboard.setString(callID)
                     showToastWithGravity("Copied!")
                   }}>
 
-                    <View style={{flexDirection:'row', alignItems:'center', borderTopWidth:2 , borderBottomWidth:2, paddingVertical:5, borderColor:'gray'}}>
-                      <Text style={{width:'85%', color:'darkgray' ,fontSize:15 , fontFamily:'sans-serif-medium' , fontWeight:'bold', fontStyle:'italic', borderRightWidth:1, paddingRight:10, marginRight:10}}>ID : {rtcProps.appId}</Text>
+                    <View style={{flexDirection:'row', alignItems:'center', justifyContent:'center' , borderTopWidth:2 , borderBottomWidth:2, paddingVertical:5, borderColor:'gray'}}>
+                    <Text style={{width:'60%', color:'darkgray' ,fontSize:15 , fontFamily:'sans-serif-medium' , fontWeight:'bold', fontStyle:'italic', borderRightWidth:1, paddingRight:10, marginRight:10}}>ID :   {callID}</Text>
                       <MIcon 
                         name="content-copy" 
                         size={25} 
@@ -551,26 +595,32 @@ export default function RoboticEndUI({navigation}){
             style={{width:'70%', height:'50%'}}
           />
 
-          <View style={{flexDirection:'row',width:'100%', height:'14%', justifyContent:'space-evenly'}}>
-            <TouchableOpacity 
-              style={[styles.buttonStyle , {height:'100%', backgroundColor:'#d53ca5', borderColor:'#c72f97', borderWidth:3, flexDirection:'row'}]} 
-              onPress={()=>{CallOptions('join')}}>
-                <MIcon 
-                  name="call-merge" 
-                  size={20} 
-                  color={'white'} />
-                <Text style={[styles.textStyle , {marginLeft:5}]}>Join Call</Text>
-            </TouchableOpacity>
+          <View style={{flexDirection:'row',width:'100%', height:55, justifyContent:'space-evenly'}}>
+            
+            {createCallLoader ? <ActivityIndicator size="large" color="#d53ca5" /> :
+           
+              <>
+                <TouchableOpacity 
+                  style={[styles.buttonStyle , {height:'100%', backgroundColor:'#d53ca5', borderColor:'#c72f97', borderWidth:3, flexDirection:'row'}]} 
+                  onPress={()=>{CallOptions('join')}}>
+                    <MIcon 
+                      name="call-merge" 
+                      size={20} 
+                      color={'white'} />
+                    <Text style={[styles.textStyle , {marginLeft:5}]}>Join Call</Text>
+                </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={[styles.buttonStyle , {height:'100%', backgroundColor:'#d53ca5', borderColor:'#c72f97', borderWidth:3, flexDirection:'row'}]} 
-              onPress={()=>{CallOptions('create')}}>
-                <MIcon 
-                  name="call-made" 
-                  size={16} 
-                  color={'white'} />
-                <Text style={[styles.textStyle , {marginLeft:5}]}>Create Call</Text>
-            </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[styles.buttonStyle , {height:'100%', backgroundColor:'#d53ca5', borderColor:'#c72f97', borderWidth:3, flexDirection:'row'}]} 
+                  onPress={()=>{CallOptions('create')}}>
+                    <MIcon 
+                      name="call-made" 
+                      size={16} 
+                      color={'white'} />
+                    <Text style={[styles.textStyle , {marginLeft:5}]}>Create Call</Text>
+                </TouchableOpacity>
+              </>
+            }
 
           </View>
           

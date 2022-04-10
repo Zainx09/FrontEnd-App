@@ -31,21 +31,33 @@ const Stack = createNativeStackNavigator();
 import Ably from "ably";
 
 const ably = new Ably.Realtime('4WmoOg.4SZS1g:w84M-soVmVHhJSbjdeEryB9MYYMIQ3WZSJVnEdMOsu4');
-const channel = ably.channels.get('ABLY'); // for movement
+const channel1 = ably.channels.get('ABLY'); // for movement
 const channel2 = ably.channels.get('ABLY2'); // for angles
 
 const channel3 = ably.channels.get('ABLY3'); // for joystick Navigation
 
+const channel4 = ably.channels.get('ABLY4'); // for notify when someone join call
 
-export const ChannelContext = createContext();
+
+
+export const AllContext = createContext();
 
 export default function App(){
 
-  const channels = {channel , channel2 , channel3};
+  const [userData, setUserData] = useState({
+    "email":'',
+    "usernaame":''
+  })
+
+  const channels = {channel1 , channel2 , channel3, channel4};
+
+
+
+  
 
   return (
 
-    <ChannelContext.Provider value={channels}>
+    <AllContext.Provider value={{ channels: channels, UserData: [userData, setUserData] }}>
         <NavigationContainer>
             <Stack.Navigator 
                 screenOptions={{
@@ -54,10 +66,10 @@ export default function App(){
                   
 
                   
-                    {/* <Stack.Screen name="SplashScreen" component={SplashScreen} /> */}
+                    <Stack.Screen name="SplashScreen" component={SplashScreen} />
 
-                    {/* <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
-                    <Stack.Screen name="SignInScreen" component={SignInScreen} /> */}
+                    <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
+                    <Stack.Screen name="SignInScreen" component={SignInScreen} />
 
                     {/* <Stack.Screen name="MainFlow" component={MainFlow} />
                     <Stack.Screen name="MainScreen" component={MainScreen} /> */}
@@ -75,7 +87,7 @@ export default function App(){
             </Stack.Navigator>
 
         </NavigationContainer>
-    </ChannelContext.Provider>
+    </AllContext.Provider>
   );
 }
 

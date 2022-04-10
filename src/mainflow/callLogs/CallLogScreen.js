@@ -1,37 +1,191 @@
 import 'react-native-gesture-handler';
 import React from 'react';
-import { useState, useEffect , createContext} from 'react';
-import { StyleSheet, Text, TouchableOpacity,View } from "react-native";
+import { useState, useEffect , useContext} from 'react';
+import { StyleSheet, Text, TouchableOpacity,View, ToastAndroid, FlatList, ActivityIndicator } from "react-native";
 
+import Icon from 'react-native-vector-icons/FontAwesome5';
+import IIcon from 'react-native-vector-icons/Ionicons';
+import MIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 
+import Api from '../../api/Api';
 
 //RN Paper
 import { TextInput, Button } from 'react-native-paper';
 
+import { AllContext } from '../../../App';
+import { json } from 'mathjs';
+
 //AsyncStorage.removeItem('userId');
 export default function CallLogScreen({navigation}){
+   
+
+    //useContext for user data
+    const {UserData} = useContext(AllContext);
+    const [userData, setUserData] = UserData;
+
+    const [logsData , setLogsData] = useState([])
+
+    const [screenLoader , setScreenLoader] = useState(true);
+
+    const [logType , setLogType] = useState("ALL")
+
+    const showToastWithGravity = (msg) => {
+        ToastAndroid.showWithGravity(
+          msg,
+          ToastAndroid.SHORT,
+          ToastAndroid.CENTER
+        );
+      };
+
+    async function getUserData(){
+        try{
+            const response = await Api.get('/callLog/'+userData.email);
+            
+            if(response.data){
+                
+                setLogsData(response.data.reverse())
+                setScreenLoader(false);
+            }else{
+                setScreenLoader(false);
+            }
+            
+        }catch(err){
+            setScreenLoader(false);
+            showToastWithGravity('Something went wrong!;')
+        }
+    }
+
+    useEffect(()=>{
+        getUserData();
+       
+    },[])
+
+    
+
+    const Item = ({ CreatorEmail, ReceiverEmail, CreateDate, ReceiveDate }) => (
+        <View style={{flexDirection:'row', marginVertical:5 , padding:15,  backgroundColor:'white', borderRadius:5}}>
+
+            <View>
+
+                <View style={{flexDirection:'row' , alignItems:'center'}}>
+
+                    <MIcon 
+                        name="email" 
+                        size={15} 
+                        color={'gray'} />
+
+                    { ReceiverEmail === userData.email ? 
+                        CreatorEmail === userData.email ? 
+                            <Text style={[styles.textStyle , {fontSize:14, color:'black'}]}>{ "You created and joined!"}</Text>
+                            :
+                            <Text style={[styles.textStyle , {fontSize:14, color:'black'}]}>{CreatorEmail + " created!"}</Text>
+                        :
+                        <Text style={[styles.textStyle , {fontSize:14, color:'black'}]}>{ReceiverEmail ? ReceiverEmail + " joined!" : "You created the call!"}</Text>
+                    }
+                    
+                </View>
+                <View style={{flexDirection:'row', alignItems:'center'}}>
+                    <MIcon 
+                        name="call-made" 
+                        size={18} 
+                        color={ReceiveDate != "" ? 'green' : 'red'} />
+
+                    <Text style={styles.textStyle}>{"Created at : "+    CreateDate}</Text>
+                </View>                
+
+                {ReceiveDate != "" && 
+                    <View style={{flexDirection:'row', alignItems:'center'}}>
+                        <MIcon 
+                            name="call-received" 
+                            size={18} 
+                            color={'green'} />
+
+                        <Text style={styles.textStyle}>{"Received at : "+ReceiveDate}</Text>
+                    </View>
+                }
+            </View>
+        </View>
+      );
+
+    const renderItem = ({ item }) => {
+
+        if(logType === "ALL"){
+            return(
+                <Item 
+                    CreatorEmail={item.CreatorEmail}
+                    ReceiverEmail={item.ReceiverEmail}
+                    CreateDate={item.CreateDate} 
+                    ReceiveDate={item.ReceiveDate} 
+                />
+            )
+        }else if(logType === "CREATE"){
+            if(item.CreatorEmail === userData.email){
+                return(
+                    <Item 
+                        CreatorEmail={item.CreatorEmail}
+                        ReceiverEmail={item.ReceiverEmail}
+                        CreateDate={item.CreateDate} 
+                        ReceiveDate={item.ReceiveDate} 
+                    />
+                )
+            }
+        }else if(logType === "JOIN"){
+            if(item.ReceiverEmail === userData.email){
+                return(
+                    <Item 
+                        CreatorEmail={item.CreatorEmail}
+                        ReceiverEmail={item.ReceiverEmail}
+                        CreateDate={item.CreateDate} 
+                        ReceiveDate={item.ReceiveDate} 
+                    />
+                )
+            }
+        }
+        
+        };
 
 
     return (
         <View style={styles.container}>
 
-            <View style={{flexDirection:'row', width:'100%', height:'10%', borderWidth:2, alignItems:'center'}}>
-                <TouchableOpacity style={{borderWidth:1, width:'33%', height:'100%', alignItems:'center' , justifyContent:'center'}}>
-                    <Text style={{color:'black'}}>All</Text>
+            <View style={{flexDirection:'row', width:'100%', alignItems:'center', justifyContent:'space-evenly', paddingBottom:10, backgroundColor:'white', borderRadius:15}}>
+                <TouchableOpacity 
+                    style={[styles.logBtn , logType==='ALL' && {borderColor:'darkgreen', borderBottomWidth:4}]}
+                    onPress={()=>{setLogType("ALL")}}>
+
+                    <Text style={[styles.logBtnTxt , logType==='ALL' && {color:'darkgreen', fontSize:13, fontWeight:'bold'}]}>All</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={{borderWidth:1, width:'34%', height:'100%', alignItems:'center' , justifyContent:'center'}}>
-                    <Text style={{color:'black'}}>Create</Text>
+                <TouchableOpacity 
+                    style={[styles.logBtn , logType==='CREATE' && {borderColor:'darkgreen', borderBottomWidth:4}]}
+                    onPress={()=>{setLogType("CREATE")}}> 
+
+                    <Text style={[styles.logBtnTxt , logType==='CREATE' && {color:'darkgreen', fontSize:13, fontWeight:'bold'}]}>Create</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={{borderWidth:1, width:'33%', height:'100%', alignItems:'center' , justifyContent:'center'}}>
-                    <Text style={{color:'black'}}>Join</Text>
+                <TouchableOpacity 
+                    style={[styles.logBtn , logType==='JOIN' && {borderColor:'darkgreen', borderBottomWidth:4}]}
+                    onPress={()=>{setLogType("JOIN")}}>
+
+                    <Text style={[styles.logBtnTxt , logType==='JOIN' && {color:'darkgreen', fontSize:13, fontWeight:'bold'}]}>Join</Text>
                 </TouchableOpacity>
             </View>
 
-            <View style={{width:'100%', height:'90%', borderWidth:2}}>
-
-            </View>
+            {screenLoader ?
+                <View style={{height:'90%' , width:'100%' , justifyContent:'center' , alignItems:'center'}}>
+                    <ActivityIndicator size="large" color="darkgreen" /> 
+                </View>
+                
+            :
+                <View style={{width:'100%', maxHeight:'90%'}}>
+                    <FlatList
+                        inverted={false}
+                        data={logsData}
+                        renderItem={renderItem}
+                        keyExtractor={item => item._id}
+                    />
+                </View>
+            }
         </View>
     );
 }
@@ -39,7 +193,28 @@ export default function CallLogScreen({navigation}){
 const styles = StyleSheet.create({
     container: {
       flex: 1,
-      margin:10
+      margin:10,
+      marginTop:15,
+      
+    },
+    textStyle:{
+        color:'gray', 
+        fontSize:11,
+        fontFamily:'sans-serif-medium',
+        fontWeight:'bold'
+    },
+    logBtn:{
+        borderBottomWidth:1,
+        width:'30%',
+        alignItems:'center' , 
+        justifyContent:'center'
+    },
+    logBtnTxt:{
+        paddingVertical:10, 
+        fontSize:12,
+        fontFamily:'sans-serif-medium',
+        color:'black'
     }
+    
   });
 
