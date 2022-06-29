@@ -26,6 +26,8 @@ import SettingScreen from './src/mainflow/SettingScreen';
 
 import CallLogScreen from './src/mainflow/callLogs/CallLogScreen';
 
+import ChangePasswordScreen from './src/mainflow/changePassword/ChangePasswordScreen'
+
 const Stack = createNativeStackNavigator();
 
 import Ably from "ably";
@@ -71,9 +73,6 @@ export default function App(){
                     <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
                     <Stack.Screen name="SignInScreen" component={SignInScreen} />
 
-                    {/* <Stack.Screen name="MainFlow" component={MainFlow} />
-                    <Stack.Screen name="MainScreen" component={MainScreen} /> */}
-
                     <Stack.Screen name="HomePageScreen" component={HomePage} />
                     <Stack.Screen name="UserEndScreen" component={UserEndUI} />
                     <Stack.Screen name="VideoCallScreen" component={VideoCallScreen} />
@@ -83,6 +82,7 @@ export default function App(){
 
                     <Stack.Screen name="SettingScreen" component={SettingScreen} />
                     <Stack.Screen name="CallLogScreen" component={CallLogScreen} />
+                    <Stack.Screen name="ChangePasswordScreen" component={ChangePasswordScreen} />
                   
             </Stack.Navigator>
 

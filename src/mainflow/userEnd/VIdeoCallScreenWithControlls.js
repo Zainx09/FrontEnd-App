@@ -23,7 +23,9 @@ import MIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import BluetoothSerial from 'react-native-bluetooth-serial-2'
 
-import NavigationButtons from './NavigationButtons';
+import NavigationButtons from './navigationButton/NavigationButtons';
+import HeightButtons from './navigationButton/HeightButton';
+import FloatingButton from './navigationButton/FLoatingButton';
 
 import { setUpdateIntervalForType, SensorTypes, accelerometer ,gyroscope, orientation  } from "react-native-sensors";
 
@@ -56,6 +58,8 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
     const [disable , setDisable] = useState(false);
 
     const {control} = route.params;
+    // const control = true;
+    
 
     const showToastWithGravity = (msg) => {
       ToastAndroid.showWithGravity(
@@ -73,32 +77,32 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
 
     ///// For Navigations
     const onSendMessage=(text)=>{
-      showToastWithGravity(text)
+      // showToastWithGravity(text)
       channels.channel1.publish('MyCommand', text);
+      return;
     }
 
 
       ////// For Angles
       const sendAngle=(text)=>{ 
         channels.channel2.publish('MyAngles', text);
+        return;
     }
 
     ////////////////// ABLY API ///////////////////////////
 
 
     ///////////////// Video Call //////////////////////
-    const [callOption , setCallOption] = useState(null);
+    const [callOption , setCallOption] = useState(''); //////////////////////////////
     const [callID , setCallID] = useState('')
     const [callIDJoin , setCallIDJoin] = useState('')
-    const [videoCall, setVideoCall] = useState(false);
+    const [videoCall, setVideoCall] = useState(false); ///////////////////////////
 
     const [createCallLoader , setCreateCallLoader] = useState(false)
 
     const [rtcProps, setRtcProps] = useState({})
 
     const [ callJoinerEmail , setCallJoinerEmail ] = useState('')
-
-    // let rtcProps = {};
 
     async function CallOptions(option){
       
@@ -174,11 +178,12 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
     }
     
     const callbacks = {EndCall: () => {
-
+      setCallID('');
       if(callOption === 'create'){
         setCallOption(null);
         setVideoCall(false);
       }else{
+        setCallOption(null);
         setVideoCall(false);
       }
     }};
@@ -257,7 +262,8 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
           
         ]);
         return true;
-      }else if(callOption !== null){
+      }else if(callOption != null){
+        setCallIDJoin('')
         setCallOption(null);
         return true;
       }
@@ -267,11 +273,13 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
   
     useEffect(() => {
       
-  
-      const backHandler = BackHandler.addEventListener(
+     
+        const backHandler = BackHandler.addEventListener(
         "hardwareBackPress",
         backAction
       );
+    
+      
 
       if(videoCall && callOption == 'join'){
 
@@ -296,7 +304,10 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
 
 
     ///////////////// Sensor readings //////////////////////
-    const [data, setData] = useState(null);
+    const [data, setData] = useState({'roll':null , 'yaw':null});
+
+    const [isSensors , setIsSensors] = useState(true);
+
     function quaternionToAngles(q){
         let data = q;
       
@@ -322,242 +333,416 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
 
 
     useEffect(()=>{
-      if(control){
+      if(control && isSensors){
         setUpdateIntervalForType(SensorTypes.orientation  ,500);
       }
-      
-    },[]);
+    },[control , isSensors]);
 
     
 
     useEffect(() => {
 
-      if(control){
-
-        let device_motion = orientation.subscribe(({qx, qy, qz, qw, pitch, roll, yaw}) =>{
-          // setData({'qx':qx, 'qy':qy, 'qz':qz, 'qw':qw, 'pitch':pitch, 'roll':roll, 'yaw':yaw});
-          let dat = {'qx':qx, 'qy':qy, 'qz':qz, 'qw':qw,};
-          let euler = quaternionToAngles(dat);
-    
-          // setData({'roll':round(euler.roll), 'yaw':round(euler.yaw)});
-          setData({'roll':getAngle('roll',euler.roll), 'yaw':getAngle('yaw',euler.yaw)});
-            //  console.log('call')
-          if (videoCall){
-            if(data){
-              if (data.roll === getAngle('roll',euler.roll) && data.yaw === getAngle('yaw',euler.yaw)){
-                  return null
-              }else{
-                  // const txt = 'y = '+ getAngle('roll',euler.roll) + " z = " + getAngle('yaw',euler.yaw)
-                  const txt = getAngle('roll',euler.roll) + " " + getAngle('yaw',euler.yaw)
-                  // console.log('change')
-                  sendAngle(txt);
+      if(control && isSensors){
+        let device_motion;
+        try{
+          device_motion = orientation.subscribe(({qx, qy, qz, qw, pitch, roll, yaw}) =>{
+            // setData({'qx':qx, 'qy':qy, 'qz':qz, 'qw':qw, 'pitch':pitch, 'roll':roll, 'yaw':yaw});
+            let dat = {'qx':qx, 'qy':qy, 'qz':qz, 'qw':qw,};
+            let euler = quaternionToAngles(dat);
+      
+            // setData({'roll':round(euler.roll), 'yaw':round(euler.yaw)});
+            setData({'roll':getAngle('roll',euler.roll), 'yaw':getAngle('yaw',euler.yaw)});
+              //  console.log('call')
+            if (videoCall){
+              if(data){
+                if (data.roll === getAngle('roll',euler.roll) && data.yaw === getAngle('yaw',euler.yaw)){
+                    return null
+                }else{
+                    // const txt = 'y = '+ getAngle('roll',euler.roll) + " z = " + getAngle('yaw',euler.yaw)
+                    const txt = getAngle('roll',euler.roll) + " " + getAngle('yaw',euler.yaw)
+                    // console.log('change')
+                    sendAngle(txt);
+                }
               }
             }
-          }
-        })
+          })
+
+        }catch(err){
+          console.log(err);
+        }
+        
 
         return(()=>{
+          try{
             device_motion.unsubscribe();
+          }catch(err){
+            console.log(err)
+          }
         })
       }
 
-    }, [data]);
+    }, [data , control , isSensors]);
 
     ///////////////// Sensor readings //////////////////////
 
 
     ////////////////// Bluetooth Code ////////////////////
 
-  const [connected , setConnected] = useState(false);
+    const [btConnected , setBtConnected] = useState(false);
+    const [blinkIcon , setBlinkIcon] = useState(false);
 
-  // const [navigate , setNavigate] = useState('');
+    let navigate = '';
+    const [nav , setNav] = useState('')
 
-  let navigate = '';
+    useEffect(() => {
+      if(!control){
+        const interval = setInterval(() => {
+          checkBtConnect();
+          readData();
+          }, 300);
 
-
-  useEffect(() => {
-    if(!control){
-
-      const interval = setInterval(() => {
-        readData();
-        }, 500);
-
-        return () => clearInterval(interval);
-    }
-      
-  }, []);
+          return () => clearInterval(interval);
+      }   
+    }, []);
 
 
-  //address of joystick's bluetooth 00:18:E4:40:00:06
- 
-
-  async function connect_Bt(){
-    setLoading(true); setDisable(true);
-    try{
-      let en = await BluetoothSerial.isEnabled();
-
-      if(!en){
-        setLoading(false); setDisable(false);
-        showToastWithGravity("Please Enable Bluetooth.")
-        // console.log("Please Enable Bluetooth.")
-        return
+    //For icon Blinking
+    useEffect(()=>{
+      if(!control){
+        const interval = setInterval(() => {
+          setBlinkIcon(!blinkIcon);
+          }, 400);
+    
+          return () => clearInterval(interval);
       }
-      await BluetoothSerial.connect("00:18:E4:40:00:06");
+      
+    },[blinkIcon])
 
-      let check = BluetoothSerial.isConnected();
-
-      if (check){
-        setConnected(true);
-        showToastWithGravity("Connected")
+    async function checkBtConnect(){
+      let check = await BluetoothSerial.isConnected();
+      if(check){
+        setBtConnected(true);
+        return true;
       }else{
-        setLoading(false); setDisable(false);
-        showToastWithGravity("Please Try Again!")
-        setConnected(false);
+        setBtConnected(false);
+        return false;
       }
-
-    }catch(err){
-      setLoading(false); setDisable(false);
-      setConnected(false);
-      showToastWithGravity(err.message)
-    } 
-  }
-
-  async function readData(){
-    // let check = BluetoothSerial.isConnected();
-    if (!BluetoothSerial.isConnected()) {
-      showToastWithGravity("Must be connected!!");
-      return
     }
-    
-    let data = await BluetoothSerial.readFromDevice();
 
-    try{
-      let data = await BluetoothSerial.readFromDevice();
 
-      if(data){
-      
-        if(data == 'F'){
-          if(navigate !== 'F'){
-            console.log(data);
-            navigate = 'F';
-            onSendMessage('GO IN');
-          }
+    //address of joystick's bluetooth 00:18:E4:40:00:06
+    //address of Robot's bluetooth 00:21:11:01:CB:B9
+    async function connect_Bt(){
+      setLoading(true); setDisable(true);
+      try{
+        let en = await BluetoothSerial.isEnabled();
 
-        }else if (data == 'B'){
-          if(navigate !== 'B'){
-            console.log(data);
-            navigate = 'B';
-            onSendMessage('BACK IN');
-          }
-
-        }else if (data == 'L'){
-          if(navigate !== 'L'){
-            console.log(data);
-            navigate = 'L'
-            onSendMessage('LEFT IN');
-          }
-          
-        }else if (data == 'R'){
-          if(navigate !== 'R'){
-            console.log(data);
-            navigate = 'R'
-            onSendMessage('RIGHT IN');
-          }
-          
-        }else if (data == 'C'){
-          if(navigate !== 'C'){
-            console.log(data);
-            navigate = 'C'
-            onSendMessage('GO OUT');
-          }
-          
+        if(!en){
+          setLoading(false); setDisable(false);
+          showToastWithGravity("Please Enable Bluetooth.")
+          // console.log("Please Enable Bluetooth.")
+          return
         }
+        await BluetoothSerial.connect("00:18:E4:40:00:06");
+
+        setLoading(false); setDisable(false);
+
+        let check = await BluetoothSerial.isConnected();
+
+        if (check){
+          setBtConnected(true);
+          showToastWithGravity("Connected")
+        }else{
+          setLoading(false); setDisable(false);
+          showToastWithGravity("Please Try Again!")
+          setBtConnected(false);
+        }
+
+      }catch(err){
+        setLoading(false); setDisable(false);
+        setBtConnected(false);
+        showToastWithGravity(err.message)
+      } 
+    }
+
+    async function readData(){
+      let check = await BluetoothSerial.isConnected();
+      if (!check) {
+        return false
       }
       
-    }catch(err){
-      setConnected(false);
-      // showToastWithGravity(err.message);
-      console.log(err.message)
+      try{
+        let data = ''
+        data = await BluetoothSerial.readFromDevice();
+
+        if(data){
+
+          switch(String(data)){
+
+            case 'A':
+              if(navigate != 'A'){
+                console.log('A');
+                navigate = 'A';
+                onSendMessage('GO IN');
+              }
+              break;
+      
+            case "B":
+              if(navigate != 'B'){
+                console.log('B');
+                navigate = 'B';
+                onSendMessage('BACK IN');
+              }
+              break;
+      
+            case "C":
+              if(navigate != 'C'){
+                console.log('C');
+                navigate = 'C';
+                onSendMessage('LEFT IN');
+              }
+              break;
+
+            case "D":
+              if(navigate != 'D'){
+                console.log('D');
+                navigate = 'D';
+                onSendMessage('RIGHT IN');
+              }
+              break;
+
+            case 'E':
+              if(navigate != 'E'){
+                console.log('E');
+                navigate = 'E';
+                onSendMessage('LEFT IN R');
+              }
+              break;
+      
+            case "F":
+              if(navigate != 'F'){
+                console.log('F');
+                navigate = 'F';
+                onSendMessage('RIGHT IN R');
+              }
+              break;
+      
+            case "G":
+              if(navigate != 'G'){
+                console.log('G');
+                navigate = 'G';
+                onSendMessage('BACK IN R');
+              }
+              break;
+
+            case "H":
+              if(navigate != 'H'){
+                console.log('H');
+                navigate = 'H';
+                onSendMessage('GO IN R');
+              }
+              break;
+
+            default:
+              navigate = 'Z';
+              onSendMessage('GO OUT');
+              console.log('Z');
+              break
+            }
+
+          // if(data === "A"){
+          //   // if(nav != 'A'){
+          //     console.log('A');
+          //     navigate = 'A';
+          //     onSendMessage('GO IN');
+          //   // }
+
+          // }else if(data === "B"){
+          //   if(nav != 'B'){
+          //     console.log('B');
+          //     navigate = 'B';
+          //     onSendMessage('BACK IN');
+          //   }
+
+          // }else if(data === "C"){
+          //   if(nav != 'C'){
+          //     console.log(data);
+          //     navigate = 'C'
+          //     onSendMessage('LEFT IN');
+          //   }
+            
+          // }else if(data === "D"){
+          //   if(nav != 'D'){
+          //     console.log(data);
+          //     navigate = 'D'
+          //     onSendMessage('RIGHT IN');
+          //   }
+            
+          // }
+          
+          
+          // else if(data === "G"){
+          //   if(navigate != 'G'){
+          //     console.log(data);
+          //     navigate = 'G';
+          //     onSendMessage('BACK IN R');
+          //   }
+
+          // }else if(data === "H"){
+          //   if(navigate != 'H'){
+          //     console.log(data);
+          //     navigate = 'H';
+          //     onSendMessage('GO IN R');
+          //   }
+
+          // }else if(data === 'E'){
+          //   if(navigate != 'E'){
+          //     console.log(data);
+          //     navigate = 'E'
+          //     onSendMessage('LEFT IN R');
+          //   }
+            
+          // }else if(data === "F"){
+          //   if(navigate != 'F'){
+          //     console.log(data);
+          //     navigate = 'F'
+          //     onSendMessage('RIGHT IN R');
+          //   }
+            
+          // }else if(data === "Z"){
+          //   if(navigate != 'Z'){
+          //     console.log(data);
+          //     navigate = 'Z'
+          //     onSendMessage('GO OUT');
+          //   }
+          // } 
+        }
+        
+      }catch(err){
+        setBtConnected(false);
+        showToastWithGravity(err.message);
+      }
+      
     }
+
+    ///////TESTING//////////////
+
     
-    }
+    // useEffect(()=>{
+      
+    //   connect_Bt();
+    // },[])
+    // async function write_data(key){
+    //   let check = BluetoothSerial.isConnected();
+    //   if (!check) {
+    //     // showToastWithGravity("Must be connected!!");
+    //     console.log("Must be connected!!");
+    //     return
+    //   }else{
+
+    //     try{
+    //       await BluetoothSerial.write(key);
+
+    //     }catch(err){
+    //       setConnected(false);
+    //       // showToastWithGravity(err.message);
+    //       console.log(err.message)
+    //     }
+    //   }
+    // }
+
+
+    // const handleMessage=(message)=>{
+    //   // setMessage(message)
+    //   switch(message) {
+    //     case "LEFT IN":
+    //       write_data('A')
+    //       break;
+
+    //     case "RIGHT IN":
+    //       write_data('B')
+    //       break;
+
+    //     case "GO IN":
+    //       write_data('C')
+    //       break;
+
+    //     case "BACK IN":
+    //       write_data('D')
+    //       break;
+
+    //     case "LEFT OUT":
+    //       write_data('Z')
+    //       break;
+
+    //     case "RIGHT OUT":
+    //       write_data('Z')
+    //       break;
+
+    //     case "GO OUT":
+    //       write_data('Z')
+    //       break;
+
+    //     case "BACK OUT":
+    //       write_data('Z')
+    //       break;
+
+    //     ///////////////////////////////////////// ROTATION /////////////
+    //     case "LEFT IN R":
+    //       write_data('E')
+    //       break;
+
+    //     case "RIGHT IN R":
+    //       write_data('F')
+    //       break;
+
+    //     case "GO IN R":
+    //       write_data('G')
+    //       break;
+
+    //     case "BACK IN R":
+    //       write_data('H')
+    //       break;
+
+    //     case "LEFT OUT R":
+    //       write_data('Z')
+    //       break;
+
+    //     case "RIGHT OUT R":
+    //       write_data('Z')
+    //       break;
+
+    //     case "GO OUT R":
+    //       write_data('Z')
+    //       break;
+
+    //     case "BACK OUT R":
+    //       write_data('Z')
+    //       break;
+
+    //     default:
+    //       break
+    //   }
+    //   // write_data()
+    // } 
+
+    ///////TESTING//////////////
+
 
   ////////////////// Bluetooth Code ////////////////////
 
 
 
-
-
-    ///////////////// Pusher API /////////////////////////
-    // const [messages , setMessages] = useState('')
-
-    // useEffect(() => {        
-
-    //     const pusher = new Pusher(pusherConfig.key, pusherConfig); // (1)
-    //     const chatChannel = pusher.subscribe('chat_channel'); // (2)
-    //     chatChannel.bind('pusher:subscription_succeeded', () => { // (3)
-    //     chatChannel.bind('join', (data) => { // (4)
-    //         handleJoin(data.name);
-    //     });
-    //     // chatChannel.bind('part', (data) => { // (5)
-    //     //     handlePart(data.name);
-    //     // });
-    //     // chatChannel.bind('message', (data) => { // (6)
-    //     //     handleMessage(data.name, data.message);
-    //     // });
-    //     });
-
-    //     fetch(`${pusherConfig.restServer}/users/${'zain'}`, {
-    //     method: 'PUT'
-    //     });
-
-    //     // return () => {
-    //     //   setMessages('');
-    //     //   // Anything in here is fired on component unmount.
-    //     //   fetch(`${pusherConfig.restServer}/users/${'zain'}`, {
-    //     //       method: 'DELETE'
-    //     //   });
-    //     // }
-
-    //     return(()=>{
-    //       chatChannel.unsubscribe('chat_channel');
-    //     })
-        
-
-    // }, []);
-
-
-    // const handleJoin=(name)=>{ 
-    //     setMessages({action: 'join', name: name, message: 'Connected'})
-    // }
-        
-    // const handlePart=(name)=>{
-    //     setMessages({action: 'part', name: name , message: 'Disconnected'})
-    // }
-    
-    // const handleMessage=(name, message)=>{
-    //     setMessages({action: 'message', name: name, message: message})
-    // } 
-
-
-    // const onSendMessage=(text)=>{ // (9)
-    //     const payload = {
-    //         message: text
-    //     };
-    //     fetch(`${pusherConfig.restServer}/users/${'zain'}/messages`, {
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'application/json'
-    //     },
-    //     body: JSON.stringify(payload)
-    //     });
-    // }
-    ///////////////// Pusher API /////////////////////////
-
+    const theme = {
+      roundness: 10,
+      colors: {
+        primary: '#9366f4',
+      },
+    };   
     
     return(
 
-        <View style={{flex:1}}> 
+      <View style={{flex:1}}> 
 
       {callOption ? 
         
@@ -571,11 +756,13 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
               onChangeText={(text)=>{setCallIDJoin(text)}}
               mode="outlined"
               label="Call ID"
-              left={<TextInput.Icon name="call-made" size={20} color="#9366f4"/>}
+              left={<TextInput.Icon name="call-made" size={20} color={(isTextInputFocused)=> isTextInputFocused ? "#9366f4" : "gray"  }/>}
+              theme={theme}
+              keyboardType='numeric'
             />
 
             <Button 
-                style={callIDJoin ? [styles.buttonStyle1 , {height:60, width:'55%', borderWidth:3, backgroundColor:'#9366f4', borderColor:'#8152e5'}]: [styles.buttonStyle1 , {height:60, width:'55%', borderWidth:3, backgroundColor:'darkgray', borderColor:'gray'}]}
+                style={callIDJoin ? [styles.buttonStyle1 , {height:55, width:'55%', backgroundColor:'#9366f4'}]: [styles.buttonStyle1 , {height:55, width:'55%', backgroundColor:'darkgray'}]}
                 labelStyle={{color:'white' ,fontSize:14 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
                 icon="connection"
                 mode="contained" 
@@ -594,29 +781,67 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
           videoCall ? 
 
             control? 
-              <View style={{flex:1 , flexDirection:'column'}}>
-                      <Text style={{color:'black'}}>{data.roll}</Text>
-                      <Text style={{color:'black'}}>{data.yaw}</Text>
-                  <View style={{height:'65%'}}>
-                    <View style={{backgroundColor:'black'}}>
-                      <Text style={{color:'white' , fontSize:11, fontFamily:'sans-serif-medium' , fontWeight:'bold', alignSelf:'center'}}>{callJoinerEmail.toUpperCase()}</Text>
+              <View style={{flex:1, backgroundColor:'black'}}>
+                  <View style={{height:'82%'}}>
+                    <View style={{backgroundColor:'white'}}>
+                      <Text style={{color:'black' , fontSize:11, fontFamily:'sans-serif-medium' , fontWeight:'bold', alignSelf:'center'}}>Email : {callJoinerEmail.toUpperCase()}</Text>
                     </View>
-                      <AgoraUIKit rtcProps={rtcProps} callbacks={callbacks} /> 
+                    <AgoraUIKit rtcProps={rtcProps} callbacks={callbacks} /> 
+                    
+                    <View style={{position:'absolute', width:'100%',  height:'100%', marginTop:'10%', alignItems:'flex-end'}}>
+                      {isSensors && 
+                        <View style={{width:65, height:60 , marginRight:5, flexDirection:'column', alignItems:'center'}}>
+                          <Text style={{height:'50%' , color:'lightgray' ,fontSize:11 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>X: {data.yaw}</Text>
+                          <Text style={{height:'50%' , color:'lightgray' ,fontSize:11 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Y: {data.roll}</Text>
+                        </View>
+                      }
+                      <View style={{width:'100%' , marginRight:10}}>
+                        <FloatingButton setSensors={setIsSensors} control={control} isHeightBtn={false} callID={callID}/>
+                      </View>
+                    </View>
+                    
+
                   </View>
 
-                  <View style={{height:'30%'}}>
-                      {/* <NavigationButtons messages={ messages } onSendMessage={ onSendMessage } /> */}
-                      <NavigationButtons onSendMessage={ onSendMessage } />
-                  </View>
+                  <View style={{height:'18%', flexDirection:'row' , justifyContent:'space-around', backgroundColor:"lightgray", borderWidth:2 , borderColor:'gray' , borderTopRightRadius:30, borderTopLeftRadius:30, marginHorizontal:5}}>
+                    {!isSensors && 
+                      <View style={{height:'100%', width:'40%' , borderColor:'darkgray'}}>
+                          <NavigationButtons onSendMessage={ onSendMessage } type={"rotation"}/>
+                      </View>
+                    }
 
+                    <View style={{height:'100%', width:'13%', paddingVertical:3}}>
+                      <HeightButtons onSendMessage={ onSendMessage }/>
+                    </View>
+
+                    <View style={{height:'100%', width:'40%' , borderColor:'darkgray'}}>
+                        <NavigationButtons onSendMessage={ onSendMessage } type="navigation"/>
+                    </View>
+                  </View>
+  
               </View>
             :
-              <>
-                <View style={{backgroundColor:'black'}}>
-                  <Text style={{color:'white' , fontSize:11, fontFamily:'sans-serif-medium' , fontWeight:'bold', alignSelf:'center'}}>{callJoinerEmail.toUpperCase()}</Text>
+              <View style={{marginBottom:20}}>
+                <View style={{backgroundColor:'white'}}>
+                  <Text style={{color:'black' , fontSize:11, fontFamily:'sans-serif-medium' , fontWeight:'bold', alignSelf:'center'}}>Email: {callJoinerEmail.toUpperCase()}</Text>
                 </View>
                 <AgoraUIKit rtcProps={rtcProps} callbacks={callbacks} /> 
-              </>
+
+                <View style={{position:'absolute', width:'100%',  height:'100%', marginTop:40, alignItems:'flex-end'}}>
+                  <View style={{flexDirection:'row', alignItems:'center', marginRight:5}}>
+                    <Text style={{color:'lightgray', fontSize:11, fontFamily:'sans-serif-medium' , fontWeight:'bold', marginRight:5}}>BT{!btConnected && " not"} Connected!</Text>
+                      <MIcon 
+                        name="moon-full" 
+                        size={10} 
+                        color={btConnected ? 'green' : blinkIcon ? 'red' : 'lightgray'} 
+                        />
+                  </View>
+
+                  <View style={{width:'100%', marginRight:10}}>
+                    <FloatingButton setSensors={setIsSensors} control={control} connect_BT={connect_Bt} btConnected={btConnected} checkBtConnect={checkBtConnect} isHeightBtn={true} onSendMessage={ onSendMessage } callID={callID}/>
+                  </View>
+                </View>
+              </View>
           :
 
             <View style={{flex:1 , justifyContent:'center', alignItems:'center'}}>
@@ -642,7 +867,7 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
                 </TouchableOpacity>
 
                 <Button 
-                    style={[styles.buttonStyle1 , {height:60, width:'55%', borderWidth:3, backgroundColor:'#9366f4', borderColor:'#8152e5', borderRadius:10}]}
+                    style={[styles.buttonStyle1 , {height:60, width:'55%', backgroundColor:'#8152e5', borderColor:'#8152e5', borderRadius:5}]}
                     labelStyle={{color:'white' ,fontSize:14 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
                     icon="call-made"
                     mode="contained" 
@@ -658,7 +883,7 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
         
         <View style={{flex:1, alignItems:'center', justifyContent:'space-evenly'}}> 
 
-          <View style={{width:'90%' , height:'70%' , backgroundColor:'white', borderWidth:3, borderRadius:20, borderColor:'darkgray', alignItems:'center', justifyContent:'space-around'}}>
+          <View style={{width:'90%' , height:'70%' , backgroundColor:'white', borderWidth:2, borderRadius:10, borderColor:'darkgray', alignItems:'center', justifyContent:'space-around'}}>
 
             <Text style={[styles.textStyle , {fontWeight:'bold', color:'gray', fontSize:18, marginLeft:10}]}>{control ? "With Navigation" : "Without Navigation"}</Text>
             
@@ -673,17 +898,17 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
            
               <>
                 <TouchableOpacity 
-                style={[styles.buttonStyle , { backgroundColor:'#a88ed6', borderColor:'#9072c5', borderWidth:3, flexDirection:'row'}]} 
-                onPress={()=>{CallOptions('join')}}>
-                  <MIcon 
-                    name="call-merge" 
-                    size={20} 
-                    color={'white'} />
-                  <Text style={[styles.textStyle , {marginLeft:5}]}>Join Call</Text>
-              </TouchableOpacity>
+                  style={[styles.buttonStyle , { backgroundColor:'#9072c5', flexDirection:'row'}]} 
+                  onPress={()=>{CallOptions('join')}}>
+                    <MIcon 
+                      name="call-merge" 
+                      size={20} 
+                      color={'white'} />
+                    <Text style={[styles.textStyle , {marginLeft:5}]}>Join Call</Text>
+                </TouchableOpacity>
 
                 <TouchableOpacity 
-                style={[styles.buttonStyle , {backgroundColor:'#a88ed6', borderColor:'#9072c5', borderWidth:3, flexDirection:'row'}]} 
+                style={[styles.buttonStyle , { backgroundColor:'#9072c5', flexDirection:'row'}]} 
                 onPress={()=>{CallOptions('create')}}>
                   <MIcon 
                     name="call-made" 
@@ -699,9 +924,9 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
           </View>
 
           {!control && 
-          
-            <Button 
-              style={{width:'75%', height:'10%', backgroundColor:'darkgray', borderColor:'gray', borderWidth:3, borderRadius:10, flexDirection:'row', alignItems:'center' , justifyContent:'center'}} 
+
+             <Button 
+              style={{width:'70%', height:60, backgroundColor:'darkgray', borderRadius:10, flexDirection:'row', alignItems:'center' , justifyContent:'center'}} 
               labelStyle={{color:'white', fontSize:13, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
               uppercase={false}
               mode="contained" 
@@ -731,9 +956,7 @@ const styles = StyleSheet.create({
     alignItems:'center', 
     justifyContent:'center', 
     backgroundColor:'#57bec5', 
-    borderWidth:5,
-    borderColor:'#14a2ab',
-    borderRadius:10, 
+    borderRadius:5, 
   },
   buttonStyle1:{
     width:'85%', 
@@ -741,9 +964,7 @@ const styles = StyleSheet.create({
     alignItems:'center', 
     justifyContent:'center', 
     backgroundColor:'#a3c0e5', 
-    borderWidth:6,
-    borderColor:'#6e8aa1',
-    borderRadius:20
+    borderRadius:5
   },
   textStyle:{
     color:'white', 

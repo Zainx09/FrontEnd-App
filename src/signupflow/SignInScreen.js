@@ -1,6 +1,6 @@
 import React from "react";
 import { useState , useEffect, useContext} from 'react';
-import {View , StyleSheet , Text , TouchableOpacity, KeyboardAvoidingView, ToastAndroid, ImageBackground, BackHandler} from 'react-native';
+import {View , StyleSheet , Text , TouchableOpacity, KeyboardAvoidingView, ToastAndroid, ImageBackground, BackHandler, Image} from 'react-native';
 import Api from '../api/Api'
 import {StackActions} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -48,6 +48,7 @@ const SignInScreen=({navigation})=>{
         try{
             if(email!=="" || password!==""){
                 let LowerEmail = email.toLowerCase();
+                LowerEmail = LowerEmail.replace(/\s/g, '');
                 console.log('Sent');
                 setLoading(true); setDisable(true);
 
@@ -99,58 +100,68 @@ const SignInScreen=({navigation})=>{
         return () => backHandler.remove();
     }, []);
 
+    const theme = {
+        roundness: 10,
+        colors: {
+          primary: 'indigo',
+        },
+      };
+
     return(
-        <ImageBackground source={require("../Animations/SignUpBg.gif")} resizeMode="cover" style={styles.container}>
-            <View style={{margin:20}}>
-            <Text style={{marginBottom:10, alignSelf:'center', fontSize:20, fontWeight:'bold', color:'#340683'}}>Sign In!</Text>
+        <View style={styles.container}>
+        {/* // <ImageBackground source={require("../Animations/SignUpBg.gif")} resizeMode="cover" style={styles.container}> */}
+            <View style={{width:'100%', alignItems:'center' , borderWidth:0}}>
+                <Text style={{marginBottom:10, alignSelf:'center', fontSize:25, fontFamily:'sans-serif-medium', fontWeight:'bold', color:'#e5be1a'}}>LOG IN</Text>
                 
                 <TextInput
-                    style={{fontSize:14, marginBottom:10}}
+                    style={{width:'90%', fontSize:14, marginBottom:10, fontFamily:'sans-serif-medium', backgroundColor:'#ede3ff'}}
                     mode="outlined"
                     label="Email"
                     placeholder="Type email"
-                    left={<TextInput.Icon name="email"/>}
+                    left={<TextInput.Icon name="email" color={(isTextInputFocused)=> isTextInputFocused ? "indigo" : "gray"  }/>}
                     onChangeText={(text)=>{setEmail(text)}}
+                    theme={theme}
                     />
                 <TextInput
-                    style={{fontSize:14}}
+                    style={{width:'90%', fontSize:14, fontFamily:'sans-serif-medium', backgroundColor:'#ede3ff'}}
                     mode="outlined"
                     label="Password"
                     placeholder="Type password"
                     secureTextEntry={securePass}
-                    left={<TextInput.Icon name="eye" onPress={()=>{setSecurePass(!securePass)}}/>}
+                    left={<TextInput.Icon name="eye" onPress={()=>{setSecurePass(!securePass)}} color={(isTextInputFocused)=> isTextInputFocused ? "indigo" : "gray"  }/>}
                     onChangeText={(text)=>{setPassword(text)}}
+                    theme={theme}
                     />
-            </View>
-
-            <View style={{marginHorizontal:20 , alignItems:'center',justifyContent:'space-between'}}>
-                {/* <TouchableOpacity
-                    style={{backgroundColor:'midnightblue', height:45, paddingHorizontal:40 , justifyContent:'center'}}
-                    onPress={()=>signInReq()}>
-                    
-                    <Text style={{fontSize:12, fontWeight:'bold', color:'white'}}>Sign In</Text>
-                </TouchableOpacity> */}
+            
 
                 <Button 
-                    style={{width:'50%', height:50, justifyContent:'center'}}
-                    labelStyle={{fontSize:14}}
+                    style={{width:'60%', height:55, justifyContent:'center', borderRadius:5, marginTop:40, backgroundColor:'indigo'}}
+                    labelStyle={{fontSize:15, fontFamily:'sans-serif-medium' , color:'white'}}
                     icon="account"
                     mode="contained" 
+                    uppercase={true}
                     loading={loading}
                     disabled={disable}
                     onPress={() => signInReq()}>
                     
-                        Sign In
+                        Login
                 </Button>
                 
-                <View style={{marginTop:5, paddingHorizontal:25 , alignItems:'center', flexDirection:'row'}} >
-                    <Text style={{fontSize:13, color:'black'}}>Create Account?</Text>
-                    <Text style={{fontSize:14, fontWeight:'bold', color:'#340683'}} onPress={()=>navigation.dispatch(StackActions.replace('SignUpScreen'))}>  Sign Up</Text>
+                <View style={{marginTop:15, paddingHorizontal:25 , alignItems:'center', flexDirection:'row'}} >
+                    <Text style={{fontSize:14, color:'#FFF', fontFamily:'sans-serif-medium'}}>Create Account?</Text>
+                    <Text style={{fontSize:17, fontWeight:'bold', color:'#e5be1a', fontFamily:'sans-serif-medium'}} onPress={()=>navigation.dispatch(StackActions.replace('SignUpScreen'))}>  Sign Up</Text>
                 </View>
                 
-                {/* <Button title="Go to Sign In" onPress={()=>navigation.navigate('SignUpScreen')}></Button> */}
             </View>
-        </ImageBackground>
+
+            <View style={{bottom:-100, right:-200 , borderWidth:0}}>
+                <Image 
+                    source={require('../Animations/signupGif.gif')}  
+                    style={{width:250 , height:250,  transform: [{ rotate: "-30deg" }]}}
+                />      
+            </View>
+        {/* </ImageBackground> */}
+        </View>
     );
 };
 
@@ -159,13 +170,15 @@ const SignInScreen=({navigation})=>{
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f1f1f1',
+        // backgroundColor: '#f1f1f1',
+        backgroundColor:'#7C56C3',
         paddingTop: 40
     },
 
     inputStyle:{
         marginVertical:10,
         paddingHorizontal:10,
+        backgroundColor:'#ede3ff',
         height: 45, 
         borderColor: 'midnightblue', 
         borderWidth: 1,

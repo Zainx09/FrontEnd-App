@@ -27,6 +27,8 @@ import Ably from "ably";
 
 import { AllContext } from '../../../App';
 
+import FloatingButton from '../userEnd/navigationButton/FLoatingButton';
+
 // const ably = new Ably.Realtime('4WmoOg.4SZS1g:w84M-soVmVHhJSbjdeEryB9MYYMIQ3WZSJVnEdMOsu4');
 // const channel = ably.channels.get('ABLY'); // for movement
 // const channel2 = ably.channels.get('ABLY2'); // for angles
@@ -47,7 +49,7 @@ export default function RoboticEndUI({navigation}){
 
   const {channels} = useContext(AllContext);
 
-  const [message , setMessage] = useState('');
+  const [message , setMessage] = useState('A');
 
   const [y ,setY] = useState('');
   const [z ,setZ] = useState('');
@@ -56,34 +58,40 @@ export default function RoboticEndUI({navigation}){
   useEffect(()=>{
     // const channel = context.channel;
     // const channel2 = context.channel2;
+    if (videoCall){
+      channels.channel1.subscribe('MyCommand' , (message)=>{
+        handleMessage(message.data);
+        
+      });
 
-    channels.channel1.subscribe('MyCommand' , (message)=>{
-      handleMessage(message.data)
-    });
+      channels.channel2.subscribe('MyAngles' , (angle)=>{
+        handleAngle(angle.data);
+      });
+    }
 
-    channels.channel2.subscribe('MyAngles' , (angle)=>{
-      handleAngle(angle.data)
-    });
+    
 
     return(()=>{
       channels.channel1.unsubscribe('MyCommand');
       channels.channel2.unsubscribe('MyAngles');
     })
-  },[]);
+  });
 
+
+  
   const handleMessage=(message)=>{
     setMessage(message)
     switch(message) {
       case "LEFT IN":
-        write_data('L')
+        write_data('C')
         break;
 
       case "RIGHT IN":
-        write_data('R')
+        write_data('D')
         break;
 
       case "GO IN":
-        write_data('F')
+        write_data('A')
         break;
 
       case "BACK IN":
@@ -91,27 +99,76 @@ export default function RoboticEndUI({navigation}){
         break;
 
       case "LEFT OUT":
-        write_data('C')
+        write_data('Z')
         break;
 
       case "RIGHT OUT":
-        write_data('C')
+        write_data('Z')
         break;
 
       case "GO OUT":
-        write_data('C')
+        write_data('Z')
         break;
 
       case "BACK OUT":
-        write_data('C')
+        write_data('Z')
+        break;
+
+      ///////////////////////////////////////// ROTATION /////////////
+      case "RIGHT IN R":
+        write_data('E')
+        break;
+
+      case "LEFT IN R":
+        write_data('F')
+        break;
+
+      case "GO IN R":
+        write_data('G')
+        break;
+
+      case "BACK IN R":
+        write_data('H')
+        break;
+
+      case "LEFT OUT R":
+        write_data('Z')
+        break;
+
+      case "RIGHT OUT R":
+        write_data('Z')
+        break;
+
+      case "GO OUT R":
+        write_data('Z')
+        break;
+
+      case "BACK OUT R":
+        write_data('Z')
+        break;
+
+      /////////////////////////////// Up Down ///////////////////
+
+      case "UP IN":
+        write_data('I')
+        break;
+
+      case "DOWN IN":
+        write_data('J')
+        break;
+
+      case "UP OUT":
+        write_data('Z')
+        break;
+
+      case "DOWN OUT":
+        write_data('Z')
         break;
 
       default:
-        // write_data('C');
         break
     }
     // write_data()
-    
   } 
 
   // z axis = 18 letters.
@@ -137,7 +194,7 @@ export default function RoboticEndUI({navigation}){
         break;
 
       default:
-        // write_data('C');
+        write_data('z');
         break
       }
 
@@ -164,7 +221,7 @@ export default function RoboticEndUI({navigation}){
         break;
         
       default:
-        // write_data('C');
+        write_data('z');
         break
       }
   }
@@ -264,11 +321,12 @@ export default function RoboticEndUI({navigation}){
   }
 
   const callbacks = {EndCall: () => {
-
+    setCallID('');
     if(callOption === 'create'){
       setCallOption(null);
       setVideoCall(false);
     }else{
+      setCallOption(null);
       setVideoCall(false);
     }
   }};
@@ -351,6 +409,7 @@ export default function RoboticEndUI({navigation}){
       ]);
       return true;
     }else if(callOption !== null){
+      setCallIDJoin('')
       setCallOption(null);
       return true;
     }
@@ -394,7 +453,39 @@ export default function RoboticEndUI({navigation}){
 
   ////////////////// Bluetooth Code ////////////////////
 
-  const [connected , setConnected] = useState(false);
+  const [btConnected , setBtConnected] = useState(false);
+  const [blinkIcon , setBlinkIcon] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      checkBtConnect();
+      }, 500);
+
+      return () => clearInterval(interval);
+  
+  }, []);
+
+  //For icon Blinking
+  useEffect(()=>{
+    
+    const interval = setInterval(() => {
+      setBlinkIcon(!blinkIcon);
+      }, 400);
+
+      return () => clearInterval(interval);
+ 
+  },[blinkIcon])
+
+  async function checkBtConnect(){
+    let check = await BluetoothSerial.isConnected();
+    if(check){
+      setBtConnected(true);
+      return true;
+    }else{
+      setBtConnected(false);
+      return false;
+    }
+  }
 
 
   const showToastWithGravity = (msg) => {
@@ -405,6 +496,7 @@ export default function RoboticEndUI({navigation}){
     );
   };
  
+  //address of Robot's bluetooth 00:21:11:01:CB:B9
   async function connect_Bt(){
     setLoading(true); setDisable(true);
     try{
@@ -418,27 +510,28 @@ export default function RoboticEndUI({navigation}){
       }
       await BluetoothSerial.connect("00:21:11:01:CB:B9");
 
-      let check = BluetoothSerial.isConnected();
+      let check = await BluetoothSerial.isConnected();
 
       if (check){
-        setConnected(true);
+        setLoading(false); setDisable(false);
+        setBtConnected(true);
         showToastWithGravity("Connected")
       }else{
         setLoading(false); setDisable(false);
         showToastWithGravity("Please Try Again!")
-        setConnected(false);
+        setBtConnected(false);
       }
 
     }catch(err){
       setLoading(false); setDisable(false);
-      setConnected(false);
+      setBtConnected(false);
       showToastWithGravity(err.message)
     } 
   }
   
 
   async function write_data(key){
-    let check = BluetoothSerial.isConnected();
+    let check = await BluetoothSerial.isConnected();
     if (!check) {
       // showToastWithGravity("Must be connected!!");
       console.log("Must be connected!!");
@@ -488,6 +581,13 @@ export default function RoboticEndUI({navigation}){
 
   ////////////////// Bluetooth Code ////////////////////  
 
+  const theme = {
+    roundness: 10,
+    colors: {
+      primary: '#c72f97',
+    },
+  };  
+
   return (
 
     <View style={{flex:1}}> 
@@ -496,30 +596,34 @@ export default function RoboticEndUI({navigation}){
       
       callOption==='join' && !videoCall ? 
         <View style={{flex:1 , justifyContent:'center' ,alignItems:'center',  backgroundColor:'white'}}>
-          
-              <TextInput
-                style={{width:'85%',fontSize:13 , fontFamily:'sans-serif-medium' , fontWeight:'bold', marginBottom:20}}
-                placeholder="Type Call ID Here"
-                placeholderTextColor = 'lightgray'
-                onChangeText={(text)=>{setCallIDJoin(text)}}
-                mode="outlined"
-                label="Call ID"
-                left={<TextInput.Icon name="call-made" size={20} color="#9366f4"/>}
-              />
-              <Button 
-                  style={callIDJoin ? [styles.buttonStyle1 , {height:60, width:'55%', borderWidth:3, backgroundColor:'#9366f4', borderColor:'#8152e5'}]: [styles.buttonStyle1 , {height:60, width:'55%', borderWidth:3, backgroundColor:'darkgray', borderColor:'gray'}]}
-                  labelStyle={{color:'white' ,fontSize:13 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
-                  icon="connection"
-                  mode="contained" 
-                  loading={loading}
-                  disabled={callIDJoin? disable : true}
-                  uppercase={false}
-                  onPress={()=>checkId(callIDJoin)}>
-                  
-                      Join Call
-              </Button>
+              
+          <TextInput
+            style={{width:'85%',fontSize:13 , fontFamily:'sans-serif-medium' , fontWeight:'bold', marginBottom:20}}
+            placeholder="Type Call ID Here"
+            placeholderTextColor = 'lightgray'
+            onChangeText={(text)=>{setCallIDJoin(text)}}
+            mode="outlined"
+            label="Call ID"
+            left={<TextInput.Icon name="call-made" size={20} color={(isTextInputFocused)=> isTextInputFocused ? "#c72f97" : "gray"  }/>}
+            theme={theme}
+            keyboardType='numeric'
+          />
+
+          <Button 
+              style={callIDJoin ? [styles.buttonStyle1 , {height:55, width:'50%', backgroundColor:'#c72f97'}]: [styles.buttonStyle1 , {height:55, width:'55%', backgroundColor:'darkgray'}]}
+              labelStyle={{color:'white' ,fontSize:14 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
+              icon="connection"
+              mode="contained" 
+              loading={loading}
+              disabled={callIDJoin? disable : true}
+              uppercase={false}
+              onPress={()=>checkId(callIDJoin)}>
+              
+                  Join Call
+          </Button>
 
         </View>
+
 
         :
 
@@ -532,19 +636,36 @@ export default function RoboticEndUI({navigation}){
               <Text style={{color:'black'}}>{z} </Text>
             </View>
             <View style={{height:'88%'}}>
-              <View style={{backgroundColor:'black'}}>
-                <Text style={{color:'white' , fontSize:11, fontFamily:'sans-serif-medium' , fontWeight:'bold', alignSelf:'center'}}>{callJoinerEmail.toUpperCase()}</Text>
+              <View style={{backgroundColor:'white'}}>
+                <Text style={{color:'black' , fontSize:11, fontFamily:'sans-serif-medium' , fontWeight:'bold', alignSelf:'center'}}>Email: {callJoinerEmail.toUpperCase()}</Text>
               </View>
             
               <AgoraUIKit rtcProps={rtcProps} callbacks={callbacks} /> 
+
+              <View style={{position:'absolute', width:'100%',  height:'100%', marginTop:'10%', alignItems:'flex-end'}}>
+                <View style={{flexDirection:'row', alignItems:'center', marginRight:5}}>
+                  <Text style={{color:'lightgray', fontSize:11, fontFamily:'sans-serif-medium' , fontWeight:'bold', marginRight:5}}>BT{!btConnected && " not"} Connected!</Text>
+                    <MIcon 
+                      name="moon-full" 
+                      size={10} 
+                      color={btConnected ? 'green' : blinkIcon ? 'red' : 'lightgray'} 
+                      />
+                </View>
+
+                <View style={{width:'100%' , marginRight:10}}>
+                  <FloatingButton setSensors={false} control={false} connect_BT={connect_Bt} btConnected={btConnected} checkBtConnect={checkBtConnect} isHeightBtn={false} callID={callID}/>
+                </View>
+              </View>
+
             </View>
+
           </View>
           
           :
 
           <View style={{flex:1 , justifyContent:'center', alignItems:'center'}}>
 
-              <View style={{width:'90%', height:'50%',paddingVertical:'10%', justifyContent:'space-around', alignItems:'center', backgroundColor:'white', borderColor:'darkgray', borderWidth:3, borderRadius:20}}>
+              <View style={{width:'90%', height:'50%',paddingVertical:'10%', justifyContent:'space-around', alignItems:'center', backgroundColor:'white', borderColor:'darkgray', borderWidth:1, borderRadius:10}}>
                 <Text style={{color:'gray' ,fontSize:16 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Share ID With Others</Text>
 
                 <TouchableOpacity 
@@ -554,8 +675,8 @@ export default function RoboticEndUI({navigation}){
                     showToastWithGravity("Copied!")
                   }}>
 
-                    <View style={{flexDirection:'row', alignItems:'center', justifyContent:'center' , borderTopWidth:2 , borderBottomWidth:2, paddingVertical:5, borderColor:'gray'}}>
-                    <Text style={{width:'60%', color:'darkgray' ,fontSize:15 , fontFamily:'sans-serif-medium' , fontWeight:'bold', fontStyle:'italic', borderRightWidth:1, paddingRight:10, marginRight:10}}>ID :   {callID}</Text>
+                    <View style={{flexDirection:'row', alignItems:'center', justifyContent:'center' , borderTopWidth:2 , borderBottomWidth:2, paddingVertical:10, borderColor:'gray'}}>
+                      <Text style={{width:'60%', color:'darkgray' ,fontSize:15 , fontFamily:'sans-serif-medium' , fontWeight:'bold', fontStyle:'italic', borderRightWidth:1, paddingRight:10, marginRight:10}}>ID :   {callID}</Text>
                       <MIcon 
                         name="content-copy" 
                         size={25} 
@@ -565,7 +686,7 @@ export default function RoboticEndUI({navigation}){
                 </TouchableOpacity>
 
                 <Button 
-                    style={[styles.buttonStyle1 , {height:60, width:'55%', borderWidth:3, backgroundColor:'#d53ca5', borderColor:'#c72f97', borderRadius:10}]}
+                    style={[styles.buttonStyle1 , {height:55, width:'55%', backgroundColor:'#c72f97'}]}
                     labelStyle={{color:'white' ,fontSize:14 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
                     icon="call-made"
                     mode="contained" 
@@ -581,7 +702,7 @@ export default function RoboticEndUI({navigation}){
         
       <View style={{flex:1 , alignItems:'center' , justifyContent:'space-evenly'}}>
 
-        <View style={{width:'90%' , height:connected ? '60%' : "65%", backgroundColor:'white', borderWidth:3, borderRadius:20, borderColor:'darkgray', alignItems:'center', justifyContent:'space-evenly'}}>
+        <View style={{width:'90%' , height:btConnected ? '60%' : "65%", backgroundColor:'white', borderWidth:2, borderRadius:10, borderColor:'lightgray', alignItems:'center', justifyContent:'space-evenly'}}>
           <View style={{flexDirection:'row'}}>
             <MIcon 
               name="robot-outline" 
@@ -601,7 +722,7 @@ export default function RoboticEndUI({navigation}){
            
               <>
                 <TouchableOpacity 
-                  style={[styles.buttonStyle , {height:'100%', backgroundColor:'#d53ca5', borderColor:'#c72f97', borderWidth:3, flexDirection:'row'}]} 
+                  style={[styles.buttonStyle , { backgroundColor:'#c72f97', flexDirection:'row'}]} 
                   onPress={()=>{CallOptions('join')}}>
                     <MIcon 
                       name="call-merge" 
@@ -611,7 +732,7 @@ export default function RoboticEndUI({navigation}){
                 </TouchableOpacity>
 
                 <TouchableOpacity 
-                  style={[styles.buttonStyle , {height:'100%', backgroundColor:'#d53ca5', borderColor:'#c72f97', borderWidth:3, flexDirection:'row'}]} 
+                  style={[styles.buttonStyle , { backgroundColor:'#c72f97', flexDirection:'row'}]} 
                   onPress={()=>{CallOptions('create')}}>
                     <MIcon 
                       name="call-made" 
@@ -626,81 +747,68 @@ export default function RoboticEndUI({navigation}){
           
         </View>
 
-          {connected ?
+          {btConnected ?
                
-               <View style={{width:'90%' , height:'30%' , backgroundColor:'white', borderWidth:3, borderRadius:20, borderColor:'darkgray', alignItems:'center', justifyContent:'space-evenly'}}>
+               <View style={{width:'90%' , height:'35%' , backgroundColor:'white', borderWidth:2, borderRadius:10, borderColor:'lightgray', alignItems:'center', justifyContent:'space-evenly'}}>
               
-               <Text style={{color:'#373738', fontSize:15 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>
-                 Test Movements
-               </Text>
+                <Text style={{color:'#373738', fontSize:15 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>
+                  Test Movements
+                </Text>
 
-               <View style={{width:'100%' , height:'25%' , flexDirection:'row' , justifyContent:'space-evenly'}}>
+                <View style={{width:'100%' , height:'25%' , flexDirection:'row' , justifyContent:'space-evenly'}}>
 
-                 <TouchableOpacity 
-                     style={styles.testMovement}
-                     onPressIn={()=>write_data('F')} onPressOut={()=>write_data("C")}
-                     >
-                     <Text style={{color:'#373738', fontSize:11, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>GO</Text>
-                 </TouchableOpacity>
+                  <TouchableOpacity 
+                      style={styles.testMovement}
+                      onPressIn={()=>write_data('A')} onPressOut={()=>write_data("z")}
+                      >
+                      <Text style={{color:'#373738', fontSize:11, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>GO</Text>
+                  </TouchableOpacity>
 
-                 <TouchableOpacity 
-                     style={styles.testMovement}
-                     onPressIn={()=>write_data('B')} onPressOut={()=>write_data("C")}
-                     >
-                     <Text style={{color:'#373738', fontSize:11, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>BACK</Text>
-                 </TouchableOpacity>
+                  <TouchableOpacity 
+                      style={styles.testMovement}
+                      onPressIn={()=>write_data('B')} onPressOut={()=>write_data("z")}
+                      >
+                      <Text style={{color:'#373738', fontSize:11, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>BACK</Text>
+                  </TouchableOpacity>
 
-               </View>
+                </View>
 
-               <Text style={{color:'#373738', fontSize:15 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>
-                 Test Head Rotation
-               </Text>
+                <Text style={{color:'#373738', fontSize:15 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>
+                  Test Head Rotation
+                </Text>
 
-               <View style={{width:'100%' , height:'25%' , flexDirection:'row' , justifyContent:'space-evenly'}}>
+                <View style={{width:'100%' , height:'25%' , flexDirection:'row' , justifyContent:'space-evenly'}}>
 
-                 <TouchableOpacity 
-                     style={[styles.testMovement , {width:"40%"}]}
-                     onPressIn={()=>write_data('a')} onPressOut={()=>write_data("c")}
-                     >
-                     <Text style={{color:'#373738', fontSize:11, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>UP / DOWN</Text>
-                 </TouchableOpacity>
+                  <TouchableOpacity 
+                      style={[styles.testMovement , {width:"40%"}]}
+                      onPressIn={()=>write_data('G')} onPressOut={()=>write_data("H")}
+                      >
+                      <Text style={{color:'#373738', fontSize:11, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>UP / DOWN</Text>
+                  </TouchableOpacity>
 
-                 <TouchableOpacity 
-                     style={[styles.testMovement , {width:"40%"}]}
-                     onPressIn={()=>write_data('d')} onPressOut={()=>write_data("h")}
-                     >
-                     <Text style={{color:'#373738', fontSize:11, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>LEFT / RIGHT</Text>
-                 </TouchableOpacity>
+                  <TouchableOpacity 
+                      style={[styles.testMovement , {width:"40%"}]}
+                      onPressIn={()=>write_data('E')} onPressOut={()=>write_data("F")}
+                      >
+                      <Text style={{color:'#373738', fontSize:11, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>LEFT / RIGHT</Text>
+                  </TouchableOpacity>
 
-               </View>
+                </View>
                </View>
                
               :
 
-              // <Button 
-              //   style={styles.buttonStyle1}
-              //   labelStyle={{color:'white', fontSize:13, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
-              //   mode="contained" 
-              //   icon='bluetooth'
-              //   loading={loading}
-              //   disabled={disable}
-              //   compact={true}
-              //   onPress={()=>connect_Bt()}>
-                  
-              //     CONNECT ROBOT
-              // </Button>
-
               <Button 
-              style={{width:'75%', height:'10%', backgroundColor:'darkgray', borderColor:'gray', borderWidth:3, borderRadius:10, flexDirection:'row', alignItems:'center' , justifyContent:'center'}} 
-              labelStyle={{color:'white', fontSize:13, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
-              uppercase={false}
-              mode="contained" 
-              icon='bluetooth'
-              loading={loading}
-              disabled={disable}
-              onPress={()=>connect_Bt()}>
-                
-                Connect Robot
+                style={{width:'65%', height:60, backgroundColor:'darkgray', borderRadius:10, flexDirection:'row', alignItems:'center' , justifyContent:'center'}} 
+                labelStyle={{color:'white', fontSize:13, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
+                uppercase={false}
+                mode="contained" 
+                icon='bluetooth'
+                loading={loading}
+                disabled={disable}
+                onPress={()=>connect_Bt()}>
+                  
+                  Connect Robot
               </Button>
             }
 
@@ -716,14 +824,12 @@ export default function RoboticEndUI({navigation}){
 const styles = StyleSheet.create({
 
   buttonStyle:{
-    width:'45%', 
-    height:'12%',
+    width:'44%', 
+    height:55,
     alignItems:'center', 
     justifyContent:'center', 
     backgroundColor:'#57bec5', 
-    borderWidth:5,
-    borderColor:'#14a2ab',
-    borderRadius:10,
+    borderRadius:5,
     
   },
   buttonStyle1:{
@@ -732,20 +838,15 @@ const styles = StyleSheet.create({
     alignItems:'center', 
     justifyContent:'center', 
     backgroundColor:'lightgray', 
-    borderWidth:3,
-    borderColor:'darkgray',
-    borderRadius:10
+    borderRadius:5
   }
   ,
   testMovement:{
     width:'35%', 
-    height:'100%',
+    height:55,
     alignItems:'center', 
     justifyContent:'center', 
-    borderWidth:3, 
-    borderStyle:'solid' , 
-    borderColor:'darkgray' , 
-    borderRadius:10,
+    borderRadius:5,
     backgroundColor:'lightgray'
   },
   textStyle:{

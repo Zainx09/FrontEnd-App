@@ -15,6 +15,8 @@ import { TextInput, Button } from 'react-native-paper';
 import { AllContext } from '../../../App';
 import { json } from 'mathjs';
 
+import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
+
 //AsyncStorage.removeItem('userId');
 export default function CallLogScreen({navigation}){
    
@@ -24,6 +26,8 @@ export default function CallLogScreen({navigation}){
     const [userData, setUserData] = UserData;
 
     const [logsData , setLogsData] = useState([])
+    const [createLogData , setCreateLogData] = useState([])
+    const [joinLogData , setJoinLogData] = useState([])
 
     const [screenLoader , setScreenLoader] = useState(true);
 
@@ -42,7 +46,7 @@ export default function CallLogScreen({navigation}){
             const response = await Api.get('/callLog/'+userData.email);
             
             if(response.data){
-                
+                let allLogs = 
                 setLogsData(response.data.reverse())
                 setScreenLoader(false);
             }else{
@@ -54,11 +58,66 @@ export default function CallLogScreen({navigation}){
             showToastWithGravity('Something went wrong!;')
         }
     }
+ 
+    function seperateLog(){
+        if(logsData){
+            let data = logsData.filter(function(item){
+                return item.CreatorEmail === userData.email;
+            })
+
+            let data2 = logsData.filter(function(item){
+                return item.ReceiverEmail === userData.email;
+            })
+            setCreateLogData(data);
+            setJoinLogData(data2);
+
+
+
+        }
+        
+    }
+
+
+    ///////////Swipe Gesture//////////////////////////
+    function swipeLeft(){
+        if(logType === 'ALL'){
+            setLogType('CREATE');
+            return;
+        }
+        else if (logType === 'CREATE'){
+            setLogType('JOIN');
+            return;
+        }
+        else if (logType === 'JOIN'){
+            return;
+        }
+    }
+
+    function swipeRight(){
+        if(logType === 'ALL'){
+            return;
+        }
+        else if (logType === 'CREATE'){
+            setLogType('ALL');
+            return;
+        }
+        else if (logType === 'JOIN'){
+            setLogType('CREATE');
+            return;
+        }
+    }
+
+
+    ///////////Swipe Gesture//////////////////////////
 
     useEffect(()=>{
         getUserData();
        
     },[])
+
+    useEffect(()=>{
+        seperateLog();
+    },[logsData])
 
     
 
@@ -109,7 +168,6 @@ export default function CallLogScreen({navigation}){
 
     const renderItem = ({ item }) => {
 
-        if(logType === "ALL"){
             return(
                 <Item 
                     CreatorEmail={item.CreatorEmail}
@@ -118,30 +176,6 @@ export default function CallLogScreen({navigation}){
                     ReceiveDate={item.ReceiveDate} 
                 />
             )
-        }else if(logType === "CREATE"){
-            if(item.CreatorEmail === userData.email){
-                return(
-                    <Item 
-                        CreatorEmail={item.CreatorEmail}
-                        ReceiverEmail={item.ReceiverEmail}
-                        CreateDate={item.CreateDate} 
-                        ReceiveDate={item.ReceiveDate} 
-                    />
-                )
-            }
-        }else if(logType === "JOIN"){
-            if(item.ReceiverEmail === userData.email){
-                return(
-                    <Item 
-                        CreatorEmail={item.CreatorEmail}
-                        ReceiverEmail={item.ReceiverEmail}
-                        CreateDate={item.CreateDate} 
-                        ReceiveDate={item.ReceiveDate} 
-                    />
-                )
-            }
-        }
-        
         };
 
 
@@ -177,14 +211,36 @@ export default function CallLogScreen({navigation}){
                 </View>
                 
             :
-                <View style={{width:'100%', maxHeight:'90%'}}>
-                    <FlatList
-                        inverted={false}
-                        data={logsData}
-                        renderItem={renderItem}
-                        keyExtractor={item => item._id}
-                    />
-                </View>
+                <GestureRecognizer 
+                    onSwipeLeft={() => swipeLeft()}
+                    onSwipeRight={() => swipeRight()}
+                    config={{velocityThreshold: 0.1, directionalOffsetThreshold: 20}}
+                    style={{width:'100%', maxHeight:'90%'}}>
+                    {logType === 'ALL' && 
+                        <FlatList
+                            inverted={false}
+                            data={logsData}
+                            renderItem={renderItem}
+                            keyExtractor={item => item._id}
+                        />
+                    }
+                    {logType === 'CREATE' && 
+                        <FlatList
+                            inverted={false}
+                            data={createLogData}
+                            renderItem={renderItem}
+                            keyExtractor={item => item._id}
+                        />
+                    }
+                    {logType === 'JOIN' && 
+                        <FlatList
+                            inverted={false}
+                            data={joinLogData}
+                            renderItem={renderItem}
+                            keyExtractor={item => item._id}
+                        />
+                    }
+                </GestureRecognizer>
             }
         </View>
     );

@@ -1,7 +1,7 @@
 import 'react-native-gesture-handler';
 import React from 'react';
 import { useState, useEffect, useContext } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View , Image} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -48,7 +48,6 @@ export default function SplashScreen({navigation}){
                             StackActions.replace('SignUpScreen'))
                     )
                     
-                    // setFlow('SignUpFlow');
                 }
             }else{
                 console.log('Token Not found')
@@ -56,7 +55,6 @@ export default function SplashScreen({navigation}){
                     navigation.dispatch(
                         StackActions.replace('SignUpScreen'))
                 )
-                // setFlow('SignUpFlow');
             }
 
         }catch(e){
@@ -69,26 +67,27 @@ export default function SplashScreen({navigation}){
     }
 
     useEffect(() => {
-        checkLogin();
+        
+        let interval = setTimeout(()=>{
+            checkLogin();
+        }, 3000);
+
+        return(()=>{
+            clearInterval(interval);
+        })
       },[]);
 
 
 
   return (
 
-    // <>
-    //     {flow ?  flow==='MainFlow'? <MainFlow /> : <SignUpFlow />
-    //         : 
-    //         <SafeAreaView style={{ flex: 1 , borderWidth:1, borderStyle:'solid' , borderColor:'red'}}>
-    //             <Text style={{fontSize:10 , color:'black'}}>Splash Screen</Text>
-    //         </SafeAreaView>
-    //     }
-
-    // </>
-
-        <SafeAreaView style={{ flex: 1 , borderWidth:1, borderStyle:'solid' , borderColor:'red'}}>
-            <Text style={{fontSize:10 , color:'black'}}>Splash Screen</Text>
-        </SafeAreaView>
+        <View style={{ flex: 1, backgroundColor:'#8F6AD4', alignItems:'center', justifyContent:'center'}}>
+            <Text style={{color:'#e5be1a', fontFamily:'sans-serif-medium', fontSize:18 , fontWeight:'bold'}}>Just a Moment!</Text>
+            <Image 
+                source={require('./Animations/splashGif.gif')}  
+                style={{width:'70%', height:'50%'}}
+            />
+        </View>
 
     
    

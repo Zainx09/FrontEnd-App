@@ -103,3 +103,10 @@ npm install --save react-native-vector-icons
 
 //React native paper
 npm i react-native-paper
+
+//swipe left and right gesture
+npm i react-native-swipe-gestures
+
+
+//varification code text field
+npm i react-native-confirmation-code-field
