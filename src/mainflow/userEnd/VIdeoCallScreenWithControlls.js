@@ -34,6 +34,16 @@ import Ably from "ably";
 //RN Paper
 import { TextInput, Button } from 'react-native-paper';
 
+//varification code field
+import {
+  CodeField,
+  Cursor,
+  useBlurOnFulfill,
+  useClearByFocusCell,
+} from 'react-native-confirmation-code-field';
+
+const CELL_COUNT = 5;
+
 import { AllContext } from '../../../App';
 
 // const ably = new Ably.Realtime('4WmoOg.4SZS1g:w84M-soVmVHhJSbjdeEryB9MYYMIQ3WZSJVnEdMOsu4');
@@ -103,6 +113,14 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
     const [rtcProps, setRtcProps] = useState({})
 
     const [ callJoinerEmail , setCallJoinerEmail ] = useState('')
+
+    const [value, setValue] = useState('');
+
+    const ref = useBlurOnFulfill({value, cellCount: CELL_COUNT});
+    const [props2, getCellOnLayoutHandler] = useClearByFocusCell({
+        value,
+        setValue,
+    });
 
     async function CallOptions(option){
       
@@ -178,6 +196,7 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
     }
     
     const callbacks = {EndCall: () => {
+      setCallIDJoin('')
       setCallID('');
       if(callOption === 'create'){
         setCallOption(null);
@@ -256,6 +275,8 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
               setCallOption(null);
               setVideoCall(false);
             }else{
+              setCallIDJoin('');
+              setCallOption(null);
               setVideoCall(false);
             }
           }}
@@ -549,73 +570,6 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
               console.log('Z');
               break
             }
-
-          // if(data === "A"){
-          //   // if(nav != 'A'){
-          //     console.log('A');
-          //     navigate = 'A';
-          //     onSendMessage('GO IN');
-          //   // }
-
-          // }else if(data === "B"){
-          //   if(nav != 'B'){
-          //     console.log('B');
-          //     navigate = 'B';
-          //     onSendMessage('BACK IN');
-          //   }
-
-          // }else if(data === "C"){
-          //   if(nav != 'C'){
-          //     console.log(data);
-          //     navigate = 'C'
-          //     onSendMessage('LEFT IN');
-          //   }
-            
-          // }else if(data === "D"){
-          //   if(nav != 'D'){
-          //     console.log(data);
-          //     navigate = 'D'
-          //     onSendMessage('RIGHT IN');
-          //   }
-            
-          // }
-          
-          
-          // else if(data === "G"){
-          //   if(navigate != 'G'){
-          //     console.log(data);
-          //     navigate = 'G';
-          //     onSendMessage('BACK IN R');
-          //   }
-
-          // }else if(data === "H"){
-          //   if(navigate != 'H'){
-          //     console.log(data);
-          //     navigate = 'H';
-          //     onSendMessage('GO IN R');
-          //   }
-
-          // }else if(data === 'E'){
-          //   if(navigate != 'E'){
-          //     console.log(data);
-          //     navigate = 'E'
-          //     onSendMessage('LEFT IN R');
-          //   }
-            
-          // }else if(data === "F"){
-          //   if(navigate != 'F'){
-          //     console.log(data);
-          //     navigate = 'F'
-          //     onSendMessage('RIGHT IN R');
-          //   }
-            
-          // }else if(data === "Z"){
-          //   if(navigate != 'Z'){
-          //     console.log(data);
-          //     navigate = 'Z'
-          //     onSendMessage('GO OUT');
-          //   }
-          // } 
         }
         
       }catch(err){
@@ -624,114 +578,6 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
       }
       
     }
-
-    ///////TESTING//////////////
-
-    
-    // useEffect(()=>{
-      
-    //   connect_Bt();
-    // },[])
-    // async function write_data(key){
-    //   let check = BluetoothSerial.isConnected();
-    //   if (!check) {
-    //     // showToastWithGravity("Must be connected!!");
-    //     console.log("Must be connected!!");
-    //     return
-    //   }else{
-
-    //     try{
-    //       await BluetoothSerial.write(key);
-
-    //     }catch(err){
-    //       setConnected(false);
-    //       // showToastWithGravity(err.message);
-    //       console.log(err.message)
-    //     }
-    //   }
-    // }
-
-
-    // const handleMessage=(message)=>{
-    //   // setMessage(message)
-    //   switch(message) {
-    //     case "LEFT IN":
-    //       write_data('A')
-    //       break;
-
-    //     case "RIGHT IN":
-    //       write_data('B')
-    //       break;
-
-    //     case "GO IN":
-    //       write_data('C')
-    //       break;
-
-    //     case "BACK IN":
-    //       write_data('D')
-    //       break;
-
-    //     case "LEFT OUT":
-    //       write_data('Z')
-    //       break;
-
-    //     case "RIGHT OUT":
-    //       write_data('Z')
-    //       break;
-
-    //     case "GO OUT":
-    //       write_data('Z')
-    //       break;
-
-    //     case "BACK OUT":
-    //       write_data('Z')
-    //       break;
-
-    //     ///////////////////////////////////////// ROTATION /////////////
-    //     case "LEFT IN R":
-    //       write_data('E')
-    //       break;
-
-    //     case "RIGHT IN R":
-    //       write_data('F')
-    //       break;
-
-    //     case "GO IN R":
-    //       write_data('G')
-    //       break;
-
-    //     case "BACK IN R":
-    //       write_data('H')
-    //       break;
-
-    //     case "LEFT OUT R":
-    //       write_data('Z')
-    //       break;
-
-    //     case "RIGHT OUT R":
-    //       write_data('Z')
-    //       break;
-
-    //     case "GO OUT R":
-    //       write_data('Z')
-    //       break;
-
-    //     case "BACK OUT R":
-    //       write_data('Z')
-    //       break;
-
-    //     default:
-    //       break
-    //   }
-    //   // write_data()
-    // } 
-
-    ///////TESTING//////////////
-
-
-  ////////////////// Bluetooth Code ////////////////////
-
-
 
     const theme = {
       roundness: 10,
@@ -747,27 +593,37 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
       {callOption ? 
         
         callOption==='join' && !videoCall ? 
-          <View style={{flex:1 , justifyContent:'center' ,alignItems:'center',  backgroundColor:'white'}}>
+          <View style={{flex:1 , justifyContent:'center' ,alignItems:'center',  backgroundColor:'#7C56C3', borderWidth:2}}>
             
-            <TextInput
-              style={{width:'85%',fontSize:13 , fontFamily:'sans-serif-medium' , fontWeight:'bold', marginBottom:20}}
-              placeholder="Type Call ID Here"
-              placeholderTextColor = 'lightgray'
-              onChangeText={(text)=>{setCallIDJoin(text)}}
-              mode="outlined"
-              label="Call ID"
-              left={<TextInput.Icon name="call-made" size={20} color={(isTextInputFocused)=> isTextInputFocused ? "#9366f4" : "gray"  }/>}
-              theme={theme}
-              keyboardType='numeric'
+            <Text style={styles.title}>Enter Call ID here</Text>
+
+            <CodeField
+              ref={ref}
+              {...props2}
+              // Use `caretHidden={false}` when users can't paste a text value, because context menu doesn't appear
+              value={callIDJoin}
+              onChangeText={setCallIDJoin}
+              cellCount={CELL_COUNT}
+              rootStyle={styles.codeFieldRoot}
+              keyboardType="number-pad"
+              textContentType="oneTimeCode"
+              renderCell={({index, symbol, isFocused}) => (
+              <Text
+                  key={index}
+                  style={[styles.cell, isFocused && styles.focusCell]}
+                  onLayout={getCellOnLayoutHandler(index)}>
+                  {symbol || (isFocused ? <Cursor /> : null)}
+              </Text>
+              )}
             />
 
             <Button 
-                style={callIDJoin ? [styles.buttonStyle1 , {height:55, width:'55%', backgroundColor:'#9366f4'}]: [styles.buttonStyle1 , {height:55, width:'55%', backgroundColor:'darkgray'}]}
-                labelStyle={{color:'white' ,fontSize:14 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
+                style={callIDJoin.length === 5 ? [styles.buttonStyle1 , {height:55, width:'55%', backgroundColor:'#D5B326'}]: [styles.buttonStyle1 , {height:55, width:'55%', backgroundColor:'darkgray'}]}
+                labelStyle={{color:'white' ,fontSize:16, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
                 icon="connection"
                 mode="contained" 
                 loading={loading}
-                disabled={callIDJoin? disable : true}
+                disabled={callIDJoin.length === 5 ? disable : true}
                 uppercase={false}
                 onPress={()=>checkId(callIDJoin)}>
                 
@@ -844,11 +700,11 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
               </View>
           :
 
-            <View style={{flex:1 , justifyContent:'center', alignItems:'center'}}>
-
-              <View style={{width:'90%', height:'50%',paddingVertical:'10%', justifyContent:'space-around', alignItems:'center', backgroundColor:'white', borderColor:'darkgray', borderWidth:3, borderRadius:20}}>
-                <Text style={{color:'gray' ,fontSize:16 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Share ID With Others</Text>
-
+            <View style={{flex:1 , justifyContent:'center', alignItems:'center', backgroundColor:'#8F6CD1'}}>
+              <Text style={{color:'#e5be1a' ,fontSize:20 , fontFamily:'sans-serif-medium' , fontWeight:'bold' , marginBottom:20}}>Share ID With Others</Text>
+              
+              <View style={{width:'90%', height:'35%',paddingVertical:'10%', justifyContent:'space-around', alignItems:'center', backgroundColor:'white', borderColor:'gray', borderWidth:2, borderRadius:20}}>
+           
                 <TouchableOpacity 
                   style={{width:'70%'}}
                   onPress={() =>{
@@ -867,7 +723,7 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
                 </TouchableOpacity>
 
                 <Button 
-                    style={[styles.buttonStyle1 , {height:60, width:'55%', backgroundColor:'#8152e5', borderColor:'#8152e5', borderRadius:5}]}
+                    style={[styles.buttonStyle1 , {height:60, width:'60%', backgroundColor:'#673ab7', borderColor:'#8152e5', borderRadius:5}]}
                     labelStyle={{color:'white' ,fontSize:14 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
                     icon="call-made"
                     mode="contained" 
@@ -881,9 +737,9 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
       
         :
         
-        <View style={{flex:1, alignItems:'center', justifyContent:'space-evenly'}}> 
+        <View style={{flex:1, alignItems:'center', justifyContent:'space-evenly', backgroundColor:'#8F6CD1'}}> 
 
-          <View style={{width:'90%' , height:'70%' , backgroundColor:'white', borderWidth:2, borderRadius:10, borderColor:'darkgray', alignItems:'center', justifyContent:'space-around'}}>
+          <View style={{width:'90%' , height:'70%' , backgroundColor:'white', borderWidth:2, borderRadius:30, borderColor:'gray', alignItems:'center', justifyContent:'space-around'}}>
 
             <Text style={[styles.textStyle , {fontWeight:'bold', color:'gray', fontSize:18, marginLeft:10}]}>{control ? "With Navigation" : "Without Navigation"}</Text>
             
@@ -898,7 +754,7 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
            
               <>
                 <TouchableOpacity 
-                  style={[styles.buttonStyle , { backgroundColor:'#9072c5', flexDirection:'row'}]} 
+                  style={[styles.buttonStyle , { backgroundColor:'#673ab7', flexDirection:'row'}]} 
                   onPress={()=>{CallOptions('join')}}>
                     <MIcon 
                       name="call-merge" 
@@ -908,13 +764,13 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
                 </TouchableOpacity>
 
                 <TouchableOpacity 
-                style={[styles.buttonStyle , { backgroundColor:'#9072c5', flexDirection:'row'}]} 
-                onPress={()=>{CallOptions('create')}}>
-                  <MIcon 
-                    name="call-made" 
-                    size={20} 
-                    color={'white'} />
-                  <Text style={[styles.textStyle , {marginLeft:5}]}>Create Call</Text>
+                  style={[styles.buttonStyle , { backgroundColor:'#673ab7', flexDirection:'row'}]} 
+                  onPress={()=>{CallOptions('create')}}>
+                    <MIcon 
+                      name="call-made" 
+                      size={20} 
+                      color={'white'} />
+                    <Text style={[styles.textStyle , {marginLeft:5}]}>Create Call</Text>
               </TouchableOpacity>
               </>
             }
@@ -926,7 +782,7 @@ export default function VideoCallScreenWithControlls({ route, navigation }){
           {!control && 
 
              <Button 
-              style={{width:'70%', height:60, backgroundColor:'darkgray', borderRadius:10, flexDirection:'row', alignItems:'center' , justifyContent:'center'}} 
+              style={{width:'70%', height:60, backgroundColor:'#D5B326', borderRadius:10, flexDirection:'row', alignItems:'center' , justifyContent:'center'}} 
               labelStyle={{color:'white', fontSize:13, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
               uppercase={false}
               mode="contained" 
@@ -973,12 +829,41 @@ const styles = StyleSheet.create({
     textAlign:'center',
     fontWeight:'bold'
   },
+  title: {
+    textAlign: 'center', 
+    fontSize: 20,
+    width:'90%',
+    color:'#e5be1a', 
+    fontFamily:'sans-serif-medium', 
+    fontWeight:'bold',
+    marginBottom:'15%'
+  },
+  codeFieldRoot: {
+      marginBottom: '15%',
+      width:'70%'
+  },
+  cell: {
+    width: 40,
+    height: 40,
+    fontSize: 25,
+    borderWidth:2,
+    borderColor: 'lightgray',
+    textAlign: 'center',
+    color:'#FFF',
+    fontWeight:'bold'
+  },
+  focusCell: {
+    borderColor: '#e5be1a',
+  },
 })
 
 function getAngle(type , angle){
 
     if(type === 'roll'){
-      if(angle < 65){
+      if(angle < 25){
+        return 5
+      }
+      else if(angle >= 25 && angle < 65){
         return 45
       }
       else if(angle >= 65 && angle < 110){

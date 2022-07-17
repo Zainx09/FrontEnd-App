@@ -110,3 +110,6 @@ npm i react-native-swipe-gestures
 
 //varification code text field
 npm i react-native-confirmation-code-field
+
+//internet connection 
+npm install --save @react-native-community/netinfo

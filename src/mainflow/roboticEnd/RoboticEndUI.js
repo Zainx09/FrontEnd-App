@@ -23,6 +23,16 @@ import pusherConfig from '../pusher.json';
 
 import BluetoothSerial from 'react-native-bluetooth-serial-2'
 
+//varification code field
+import {
+  CodeField,
+  Cursor,
+  useBlurOnFulfill,
+  useClearByFocusCell,
+} from 'react-native-confirmation-code-field';
+
+const CELL_COUNT = 5;
+
 import Ably from "ably";
 
 import { AllContext } from '../../../App';
@@ -49,7 +59,7 @@ export default function RoboticEndUI({navigation}){
 
   const {channels} = useContext(AllContext);
 
-  const [message , setMessage] = useState('A');
+  const [message , setMessage] = useState('');
 
   const [y ,setY] = useState('');
   const [z ,setZ] = useState('');
@@ -193,6 +203,10 @@ export default function RoboticEndUI({navigation}){
         write_data('c')
         break;
 
+      case "5":
+        write_data('d')
+        break;
+
       default:
         write_data('z');
         break
@@ -201,23 +215,23 @@ export default function RoboticEndUI({navigation}){
 
     switch(angle.split(" ")[1]) {
       case "0":
-        write_data('d')
-        break;
-
-      case "45":
         write_data('e')
         break;
 
-      case "90":
+      case "45":
         write_data('f')
         break;
 
-      case "135":
+      case "90":
         write_data('g')
         break;
 
-      case "180":
+      case "135":
         write_data('h')
+        break;
+
+      case "180":
+        write_data('i')
         break;
         
       default:
@@ -244,6 +258,14 @@ export default function RoboticEndUI({navigation}){
   const [rtcProps, setRtcProps] = useState({})
 
   const [ callJoinerEmail , setCallJoinerEmail ] = useState('')
+
+  const [value, setValue] = useState('');
+
+  const ref = useBlurOnFulfill({value, cellCount: CELL_COUNT});
+  const [props2, getCellOnLayoutHandler] = useClearByFocusCell({
+      value,
+      setValue,
+  });
 
   // let rtcProps = {};
 
@@ -321,6 +343,7 @@ export default function RoboticEndUI({navigation}){
   }
 
   const callbacks = {EndCall: () => {
+    setCallIDJoin('');
     setCallID('');
     if(callOption === 'create'){
       setCallOption(null);
@@ -401,6 +424,7 @@ export default function RoboticEndUI({navigation}){
             setCallOption(null);
             setVideoCall(false);
           }else{
+            setCallIDJoin('')
             setVideoCall(false);
           }
           
@@ -595,9 +619,9 @@ export default function RoboticEndUI({navigation}){
     {callOption ? 
       
       callOption==='join' && !videoCall ? 
-        <View style={{flex:1 , justifyContent:'center' ,alignItems:'center',  backgroundColor:'white'}}>
+        <View style={{flex:1 , justifyContent:'center' ,alignItems:'center',  backgroundColor:'#7C56C3'}}>
               
-          <TextInput
+          {/* <TextInput
             style={{width:'85%',fontSize:13 , fontFamily:'sans-serif-medium' , fontWeight:'bold', marginBottom:20}}
             placeholder="Type Call ID Here"
             placeholderTextColor = 'lightgray'
@@ -607,19 +631,41 @@ export default function RoboticEndUI({navigation}){
             left={<TextInput.Icon name="call-made" size={20} color={(isTextInputFocused)=> isTextInputFocused ? "#c72f97" : "gray"  }/>}
             theme={theme}
             keyboardType='numeric'
+          /> */}
+
+          <Text style={styles.title}>Enter Call ID here</Text>
+
+          <CodeField
+            ref={ref}
+            {...props2}
+            // Use `caretHidden={false}` when users can't paste a text value, because context menu doesn't appear
+            value={callIDJoin}
+            onChangeText={setCallIDJoin}
+            cellCount={CELL_COUNT}
+            rootStyle={styles.codeFieldRoot}
+            keyboardType="number-pad"
+            textContentType="oneTimeCode"
+            renderCell={({index, symbol, isFocused}) => (
+            <Text
+                key={index}
+                style={[styles.cell, isFocused && styles.focusCell]}
+                onLayout={getCellOnLayoutHandler(index)}>
+                {symbol || (isFocused ? <Cursor /> : null)}
+            </Text>
+            )}
           />
 
           <Button 
-              style={callIDJoin ? [styles.buttonStyle1 , {height:55, width:'50%', backgroundColor:'#c72f97'}]: [styles.buttonStyle1 , {height:55, width:'55%', backgroundColor:'darkgray'}]}
-              labelStyle={{color:'white' ,fontSize:14 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
-              icon="connection"
-              mode="contained" 
-              loading={loading}
-              disabled={callIDJoin? disable : true}
-              uppercase={false}
-              onPress={()=>checkId(callIDJoin)}>
-              
-                  Join Call
+            style={callIDJoin.length === 5 ? [styles.buttonStyle1 , {height:55, width:'55%', backgroundColor:'#D5B326'}]: [styles.buttonStyle1 , {height:55, width:'55%', backgroundColor:'darkgray'}]}
+            labelStyle={{color:'white' ,fontSize:16, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
+            icon="connection"
+            mode="contained" 
+            loading={loading}
+            disabled={callIDJoin.length === 5 ? disable : true}
+            uppercase={false}
+            onPress={()=>checkId(callIDJoin)}>
+            
+                Join Call
           </Button>
 
         </View>
@@ -632,8 +678,8 @@ export default function RoboticEndUI({navigation}){
             <View style={{height:'12%' , backgroundColor:'white'}}>
               {/* <Text style={{color:'black'}}> {messages.message} </Text> */}
               <Text style={{color:'black'}}>{message} </Text>
-              <Text style={{color:'black'}}>{y} </Text>
               <Text style={{color:'black'}}>{z} </Text>
+              <Text style={{color:'black'}}>{y} </Text>
             </View>
             <View style={{height:'88%'}}>
               <View style={{backgroundColor:'white'}}>
@@ -663,13 +709,13 @@ export default function RoboticEndUI({navigation}){
           
           :
 
-          <View style={{flex:1 , justifyContent:'center', alignItems:'center'}}>
+          <View style={{flex:1 , justifyContent:'center', alignItems:'center', backgroundColor:'#8F6CD1'}}>
+              <Text style={{color:'#e5be1a' ,fontSize:20 , fontFamily:'sans-serif-medium' , fontWeight:'bold' , marginBottom:20}}>Share ID With Others</Text>
 
-              <View style={{width:'90%', height:'50%',paddingVertical:'10%', justifyContent:'space-around', alignItems:'center', backgroundColor:'white', borderColor:'darkgray', borderWidth:1, borderRadius:10}}>
-                <Text style={{color:'gray' ,fontSize:16 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Share ID With Others</Text>
-
+              <View style={{width:'90%', height:'35%',paddingVertical:'10%', justifyContent:'space-around', alignItems:'center', backgroundColor:'white', borderColor:'gray', borderWidth:2, borderRadius:20}}>
+              
                 <TouchableOpacity 
-                  style={{width:'90%'}}
+                  style={{width:'70%'}}
                   onPress={() =>{
                     Clipboard.setString(callID)
                     showToastWithGravity("Copied!")
@@ -686,7 +732,7 @@ export default function RoboticEndUI({navigation}){
                 </TouchableOpacity>
 
                 <Button 
-                    style={[styles.buttonStyle1 , {height:55, width:'55%', backgroundColor:'#c72f97'}]}
+                    style={[styles.buttonStyle1 , {height:55, width:'60%', backgroundColor:'#673ab7'}]}
                     labelStyle={{color:'white' ,fontSize:14 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
                     icon="call-made"
                     mode="contained" 
@@ -700,29 +746,31 @@ export default function RoboticEndUI({navigation}){
     
       :
         
-      <View style={{flex:1 , alignItems:'center' , justifyContent:'space-evenly'}}>
+      <View style={{flex:1 , alignItems:'center' , justifyContent:'space-evenly', backgroundColor:'#8F6CD1'}}>
 
-        <View style={{width:'90%' , height:btConnected ? '60%' : "65%", backgroundColor:'white', borderWidth:2, borderRadius:10, borderColor:'lightgray', alignItems:'center', justifyContent:'space-evenly'}}>
           <View style={{flexDirection:'row'}}>
             <MIcon 
               name="robot-outline" 
               size={25} 
-              color={'gray'} />
-            <Text style={[styles.textStyle , {fontWeight:'bold', color:'gray', fontSize:18, marginLeft:10}]}>ROBOTIC END</Text>
+              color={'#e5be1a'} />
+            <Text style={[styles.textStyle , {fontWeight:'bold', color:'#e5be1a', fontSize:18, marginLeft:10}]}>ROBOTIC END</Text>
           </View>
+
+        <View style={{width:'90%' , height:btConnected ? '50%' : "55%", backgroundColor:'white', borderWidth:2, borderRadius:20, borderColor:'gray', alignItems:'center', justifyContent:'space-evenly'}}>
+          
           
           <Image 
             source={require("../../Animations/RoboticEnd2.gif")}  
-            style={{width:'70%', height:'50%'}}
+            style={{width:'60%', height:'60%'}}
           />
 
           <View style={{flexDirection:'row',width:'100%', height:55, justifyContent:'space-evenly'}}>
             
-            {createCallLoader ? <ActivityIndicator size="large" color="#d53ca5" /> :
+            {createCallLoader ? <ActivityIndicator size="large" color="#673ab7" /> :
            
               <>
                 <TouchableOpacity 
-                  style={[styles.buttonStyle , { backgroundColor:'#c72f97', flexDirection:'row'}]} 
+                  style={[styles.buttonStyle , { backgroundColor:'#673ab7', flexDirection:'row'}]} 
                   onPress={()=>{CallOptions('join')}}>
                     <MIcon 
                       name="call-merge" 
@@ -732,7 +780,7 @@ export default function RoboticEndUI({navigation}){
                 </TouchableOpacity>
 
                 <TouchableOpacity 
-                  style={[styles.buttonStyle , { backgroundColor:'#c72f97', flexDirection:'row'}]} 
+                  style={[styles.buttonStyle , { backgroundColor:'#673ab7', flexDirection:'row'}]} 
                   onPress={()=>{CallOptions('create')}}>
                     <MIcon 
                       name="call-made" 
@@ -749,7 +797,7 @@ export default function RoboticEndUI({navigation}){
 
           {btConnected ?
                
-               <View style={{width:'90%' , height:'35%' , backgroundColor:'white', borderWidth:2, borderRadius:10, borderColor:'lightgray', alignItems:'center', justifyContent:'space-evenly'}}>
+               <View style={{width:'90%' , height:'35%' , backgroundColor:'white', borderWidth:2, borderRadius:20, borderColor:'gray', alignItems:'center', justifyContent:'space-evenly'}}>
               
                 <Text style={{color:'#373738', fontSize:15 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>
                   Test Movements
@@ -799,7 +847,7 @@ export default function RoboticEndUI({navigation}){
               :
 
               <Button 
-                style={{width:'65%', height:60, backgroundColor:'darkgray', borderRadius:10, flexDirection:'row', alignItems:'center' , justifyContent:'center'}} 
+                style={{width:'65%', height:60, backgroundColor:'#D5B326', borderRadius:10, flexDirection:'row', alignItems:'center' , justifyContent:'center'}} 
                 labelStyle={{color:'white', fontSize:13, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
                 uppercase={false}
                 mode="contained" 
@@ -855,5 +903,31 @@ const styles = StyleSheet.create({
     fontFamily:'sans-serif-medium',
     textAlign:'center',
     fontWeight:'bold'
+  },
+  title: {
+    textAlign: 'center', 
+    fontSize: 20,
+    width:'90%',
+    color:'#e5be1a', 
+    fontFamily:'sans-serif-medium', 
+    fontWeight:'bold',
+    marginBottom:'15%'
+  },
+  codeFieldRoot: {
+      marginBottom: '15%',
+      width:'70%'
+  },
+  cell: {
+    width: 40,
+    height: 40,
+    fontSize: 25,
+    borderWidth:2,
+    borderColor: 'lightgray',
+    textAlign: 'center',
+    color:'#FFF',
+    fontWeight:'bold'
+  },
+  focusCell: {
+    borderColor: '#e5be1a',
   },
 })

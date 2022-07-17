@@ -10,6 +10,9 @@ import {StackActions} from '@react-navigation/native';
 
 import Api from './api/Api'
 
+//Network
+import NetInfo from "@react-native-community/netinfo";
+
 
 // import MainFlow from './mainflow/MainFlow';
 // import SignUpFlow from './signupflow/SignUpFlow';
@@ -21,6 +24,8 @@ export default function SplashScreen({navigation}){
     //useContext for user data
     const {UserData} = useContext(AllContext);
     const [userData, setUserData] = UserData;
+
+    const [isConnection , setIsconnection] = useState(false);
 
     async function checkLogin(){
         try{
@@ -67,26 +72,43 @@ export default function SplashScreen({navigation}){
     }
 
     useEffect(() => {
+
+        const unsubscribe = NetInfo.addEventListener(state => {
+            console.log("Is connected?", state.isConnected);
+            setIsconnection(state.isConnected)
+        });
         
         let interval = setTimeout(()=>{
-            checkLogin();
+            if(isConnection){
+                checkLogin();
+            }
+            
         }, 3000);
 
         return(()=>{
+            unsubscribe();
             clearInterval(interval);
         })
-      },[]);
+      },[isConnection]);
 
 
 
   return (
+        <View style={{flex:1}}>
 
-        <View style={{ flex: 1, backgroundColor:'#8F6AD4', alignItems:'center', justifyContent:'center'}}>
-            <Text style={{color:'#e5be1a', fontFamily:'sans-serif-medium', fontSize:18 , fontWeight:'bold'}}>Just a Moment!</Text>
-            <Image 
-                source={require('./Animations/splashGif.gif')}  
-                style={{width:'70%', height:'50%'}}
-            />
+            {!isConnection && 
+                <Text style={{backgroundColor:'#835BCE', fontFamily:'sans-serif-medium', fontSize:16 , fontWeight:'bold', color:'lightgray', textAlign:'center', paddingVertical:5, fontStyle:'italic'}}>
+                    No Internet Connection !
+                </Text>}
+
+            <View style={{ flex: 1, backgroundColor:'#8F6AD4', alignItems:'center', justifyContent:'center'}}>
+                <Text style={{color:'#e5be1a', fontFamily:'sans-serif-medium', fontSize:20 , fontWeight:'bold', marginBottom:30 , fontStyle:'italic'}}>Just a Moment!</Text>
+                <Image 
+                    source={require('./Animations/splashGif.gif')}  
+                    // style={{width:'70%', height:'50%'}}
+                    style={{width:'100%', height:'50%'}}
+                />
+            </View>
         </View>
 
     

@@ -48,6 +48,13 @@ export default function OtgScreen(props){
 
     return(
         <SafeAreaView style={styles.root}>
+            <Button 
+                style={{width:30, height:30, alignSelf:'flex-start' , marginLeft:'5%', marginBottom:'10%'}}
+                labelStyle={{fontSize:20, fontFamily:'sans-serif-medium' , color:'white', fontWeight:'bold'}}
+                uppercase={false}
+                icon="keyboard-return"
+                onPress={()=>{props.setSendCode(false)}}>
+            </Button>
             <Text style={styles.title}>We have sent a variffication code on "{props.email}"</Text>
             <CodeField
                 ref={ref}
@@ -68,9 +75,9 @@ export default function OtgScreen(props){
                 </Text>
                 )}
             />
-
+            
             <Button 
-                style={{width:'60%', height:55, justifyContent:'center', borderRadius:5, marginTop:60, backgroundColor:'indigo'}}
+                style={{width:'60%', height:55, justifyContent:'center', marginTop:'15%', borderRadius:5, backgroundColor:'indigo'}}
                 labelStyle={{fontSize:15, fontFamily:'sans-serif-medium' , color:'white'}}
                 icon="account-check"
                 mode="contained" 
@@ -81,6 +88,8 @@ export default function OtgScreen(props){
                 
                     Verify
             </Button>
+
+                
         </SafeAreaView>
     )
 }
@@ -92,7 +101,6 @@ const styles = StyleSheet.create({
         flex: 1, 
         alignItems:'center',
         borderWidth:0,
-        marginTop:'15%'
     },
     title: {
         textAlign: 'center', 
@@ -103,7 +111,7 @@ const styles = StyleSheet.create({
         fontWeight:'bold'
     },
     codeFieldRoot: {
-        marginTop: 60,
+        marginTop: '20%',
         width:'70%'
     },
     cell: {

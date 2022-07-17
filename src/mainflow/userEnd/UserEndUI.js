@@ -35,13 +35,13 @@ export default function UserEndUI({navigation}){
 
   return (
 
-      <View style={{flex:1, alignItems:'center' , justifyContent:'space-evenly'}}>
+      <View style={{flex:1, alignItems:'center' , justifyContent:'space-evenly', backgroundColor:'#8F6CD1'}}>
 
-        <Text style={{color:'#848484', fontSize:20 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Robot Controller</Text>
+        <Text style={{color:'#e5be1a', fontSize:18 , fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>ROBOT CONTROLLER</Text>
 
       
           <TouchableOpacity 
-            style={{paddingHorizontal:10, width:type == 'withNavigation' ? '85%' : '80%' , height:type == 'withNavigation' ? '45%' : '40%', backgroundColor:'white', borderWidth:type == 'withNavigation' ? 2 : 1, borderRadius:10, borderColor:type == 'withNavigation' ? 'gray':'darkgray', alignItems:'center', justifyContent:'space-evenly'}}
+            style={{paddingHorizontal:10, width:type == 'withNavigation' ? '90%' : '80%' , height:type == 'withNavigation' ? '45%' : '40%', backgroundColor:'white', borderWidth:type == 'withNavigation' ? 2 : 1, borderRadius:10, borderColor:type == 'withNavigation' ? 'gray':'darkgray', alignItems:'center', justifyContent:'space-evenly'}}
             onPress={()=>{setType('withNavigation')}}>
             
             <Image 
@@ -53,7 +53,7 @@ export default function UserEndUI({navigation}){
 
             {type === 'withNavigation' &&
               <TouchableOpacity 
-                style={[styles.buttonStyle , {height:55, backgroundColor:'#9072c5'}]} 
+                style={[styles.buttonStyle , {height:55, backgroundColor:'#673ab7'}]} 
                 onPress={()=>{goToScreen(true)}}>
                   
                   <Text style={{color:'white', fontSize:13, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Let's Start</Text>
@@ -65,7 +65,7 @@ export default function UserEndUI({navigation}){
 
         
           <TouchableOpacity 
-            style={{paddingHorizontal:10, width:type == 'withoutNavigation' ? '85%' : '80%' , height:type == 'withoutNavigation' ? '45%' : '40%', backgroundColor:'white', borderWidth:type == 'withoutNavigation' ? 2 : 1, borderRadius:10, borderColor:type == 'withoutNavigation' ? 'gray':'darkgray', alignItems:'center', justifyContent:'space-evenly'}}
+            style={{paddingHorizontal:10, width:type == 'withoutNavigation' ? '90%' : '80%' , height:type == 'withoutNavigation' ? '45%' : '40%', backgroundColor:'white', borderWidth:type == 'withoutNavigation' ? 2 : 1, borderRadius:10, borderColor:type == 'withoutNavigation' ? 'gray':'darkgray', alignItems:'center', justifyContent:'space-evenly'}}
             onPress={()=>{setType('withoutNavigation')}}>
             
             <Image 
@@ -77,7 +77,7 @@ export default function UserEndUI({navigation}){
 
             {type === 'withoutNavigation' &&
               <TouchableOpacity 
-                style={[styles.buttonStyle , {height:55, backgroundColor:'#9072c5'}]} 
+                style={[styles.buttonStyle , {height:55, backgroundColor:'#673ab7'}]} 
                 onPress={()=>{goToScreen(false)}}>
                   
                   <Text style={{color:'white', fontSize:13, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>Let's Start</Text>

@@ -30,14 +30,14 @@ export default function SettingScreen({navigation}){
       }
 
     return(
-        <View style={{flex:1, alignItems:'center', justifyContent:'space-evenly', backgroundColor:'#f7f7f7'}}>
-          <View style={{width:'90%' , height:'60%' , borderWidth:1, borderColor:'darkgray', backgroundColor:'white', borderRadius:10, justifyContent:'space-evenly' , alignItems:'center'}}>
+        <View style={{flex:1, alignItems:'center', justifyContent:'space-evenly', backgroundColor:'#7C56C3'}}>
+          <View style={{width:'90%' , height:'50%' , borderWidth:0, borderColor:'darkgray', backgroundColor:'#7C56C3', borderRadius:10, justifyContent:'space-evenly' , alignItems:'center'}}>
             
-            <Text style={[styles.textStyle , {fontWeight:'bold', color:'#263238', fontSize:15, marginLeft:10}]}>SETTINGS</Text>
+            <Text style={[styles.textStyle , {fontWeight:'bold', color:'#e5be1a', fontSize:18}]}>SETTINGS</Text>
 
             <Button 
-              style={{width:'80%', height:55, backgroundColor:'#455a64', borderRadius:5, flexDirection:'row', alignItems:'center' , justifyContent:'center'}} 
-              labelStyle={{color:'white', fontSize:13, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
+              style={{width:'80%', height:60, backgroundColor:'indigo', borderRadius:10, flexDirection:'row', alignItems:'center' , justifyContent:'center'}} 
+              labelStyle={{color:'white', fontSize:14, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
               uppercase={false}
               mode="contained" 
               icon='call-made'
@@ -47,8 +47,8 @@ export default function SettingScreen({navigation}){
             </Button>
 
             <Button 
-              style={{width:'80%', height:55, backgroundColor:'#455a64', borderRadius:5, flexDirection:'row', alignItems:'center' , justifyContent:'center'}} 
-              labelStyle={{color:'white', fontSize:13, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
+              style={{width:'80%', height:60, backgroundColor:'indigo', borderRadius:10, flexDirection:'row', alignItems:'center' , justifyContent:'center'}} 
+              labelStyle={{color:'white', fontSize:14, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
               uppercase={false}
               mode="contained" 
               icon='key'
@@ -58,8 +58,8 @@ export default function SettingScreen({navigation}){
             </Button>
 
             <Button 
-              style={{width:'50%', height:55, backgroundColor:'white', borderColor:'lightgray', borderWidth:0.2, borderRadius:5, flexDirection:'row', alignItems:'center' , justifyContent:'center'}} 
-              labelStyle={{color:'#a51d1d', fontSize:13, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
+              style={{width:'50%', height:55, backgroundColor:'white', borderColor:'lightgray', borderWidth:0.2, borderRadius:8, flexDirection:'row', alignItems:'center' , justifyContent:'center'}} 
+              labelStyle={{color:'#a51d1d', fontSize:14, fontFamily:'sans-serif-medium' , fontWeight:'bold'}}
               uppercase={false}
               mode="contained" 
               icon='logout'

@@ -70,22 +70,26 @@ export default function HomePage({navigation}){
     //Fltalist ref
     let listViewRef;
 
-     ///////////Swipe Gesture//////////////////////////
-     function swipeLeft(){
-      if(bottomButton === 'user'){
-        setBottomButton('robot')
-        listViewRef.scrollToIndex({index:1 , animated: true });
-        return;
-      }
-      else if (bottomButton === 'robot'){
-        setBottomButton('settings')
-        listViewRef.scrollToIndex({index:2 , animated: true });
-        return;
-      }
-      else if (bottomButton === 'settings'){
-        return;
-      }
+    ///////////Swipe Gesture//////////////////////////
+    function swipeLeft(){
+    if(bottomButton === 'user'){
+      setBottomButton('robot')
+      listViewRef.scrollToIndex({index:1 , animated: true });
+      return;
+    }
+    else if (bottomButton === 'robot'){
+      setBottomButton('settings')
+      listViewRef.scrollToIndex({index:2 , animated: true });
+      return;
+    }
+    else if (bottomButton === 'settings'){
+      return;
+    }
   }
+
+
+  ///////////Expand///////////////
+  const [isExpand , setIsExpand] = useState(false);
 
   function swipeRight(){
     if(bottomButton === 'user'){
@@ -120,8 +124,8 @@ export default function HomePage({navigation}){
     }
 
     const Item = ({ name, title, src, btnText, screen }) => (
-      <View style={{width:cardWidth , height:'100%', backgroundColor:'white',  borderRadius:20, borderWidth:0, borderColor:'#045257', alignItems:'center', justifyContent:'space-evenly', marginHorizontal:cardMargin}}>
-        <Text style={[styles.textStyle , {fontWeight:'bold', color:'#0d6e75', fontSize:18}]}>{name}</Text>
+      <View style={{width:cardWidth , height:'100%', backgroundColor:'#FFF',  borderRadius:20, borderWidth:0, borderColor:'#045257', alignItems:'center', justifyContent:'space-evenly', marginHorizontal:cardMargin}}>
+        <Text style={[styles.textStyle , {fontWeight:'bold', color:'#483171', fontSize:20}]}>{name}</Text>
         <Image 
           source={src}  
           style={{width:'50%', height:'40%'}}
@@ -195,22 +199,43 @@ export default function HomePage({navigation}){
 
     },[])
 
+    let textColor1 = "#483171"
+
     return (
 
-      <View style={{flex:1 , alignItems:'center' , justifyContent:'space-between', backgroundColor:'lightgray'}}>
-        <View style={{width:'95%' , height:'10%', paddingTop:5, marginBottom:5, backgroundColor:'white', borderBottomRightRadius:20, borderBottomLeftRadius:20, borderWidth:0, borderColor:'#045257', alignItems:'center', justifyContent:'center', flexDirection:'row'}}>
-          <MIcon 
-              name={timeIcon}
-              size={28} 
-              color="#0d6e75" />
-          <Text style={[styles.textStyle , {fontWeight:'bold', color:'#0d6e75', fontSize:20, marginLeft:10}]}>{greeting+userData.username +" !"}</Text>
-        </View>
+      <View style={{flex:1 , alignItems:'center' , justifyContent:'space-between', backgroundColor:'#483171'}}>
+
+        <TouchableOpacity 
+          style={{width:'95%', height:isExpand?'15%':'10%', marginTop:14, flexDirection:'column', borderRadius:20, backgroundColor:'#FFF',justifyContent:'space-evenly'}}
+          onPress={()=>{setIsExpand(!isExpand)}}>
+
+          <View style={{width:'100%', marginBottom:5,  borderColor:'#045257', alignItems:'center', justifyContent:'center', flexDirection:'row', borderRadius:20}}>
+            <MIcon 
+                style={greeting==="Good Night, " && {transform: [{ rotate: "-45deg" }]}}
+                name={timeIcon}
+                size={25} 
+                color={textColor1}/>
+            <Text style={[styles.textStyle , {fontWeight:'bold', color:textColor1, fontSize:18, marginLeft:10}]}>{greeting+userData.username +" !"}</Text>
+          </View>
+
+          {isExpand &&
+            <View style={{width:'100%',marginBottom:5, alignItems:'center', justifyContent:'center', flexDirection:'row'}}>
+              <MIcon 
+                name="email"
+                size={20} 
+                color={textColor1}/>
+              <Text style={[styles.textStyle , {fontWeight:'bold', color:textColor1, fontSize:16, marginLeft:10}]}>{userData.email}</Text>
+            </View>
+          }
+
+        </TouchableOpacity>
+        
 
         <GestureRecognizer 
           onSwipeLeft={() => swipeLeft()}
           onSwipeRight={() => swipeRight()}
           config={{velocityThreshold: 0.1, directionalOffsetThreshold: 20}}
-          style={{height:'73%'}}>
+          style={{height:isExpand?'65%':'70%'}}>
           <FlatList
             data={DATA}
             renderItem={renderItem}
@@ -227,19 +252,19 @@ export default function HomePage({navigation}){
         <View style={{flexDirection:'row', width:80 , justifyContent:'space-around'}}>
           <MIcon 
             name='circle'
-            size={bottomButton==='user'? 12 : 8} 
-            color={bottomButton==='user'? "#045257" : 'gray'} />
+            size={bottomButton==='user'? 10 : 8} 
+            color={bottomButton==='user'? "#FFF" : 'darkgray'} />
           <MIcon 
             name='circle'
-            size={bottomButton==='robot'? 12 : 8} 
-            color={bottomButton==='robot'? "#045257" : 'gray'}/>
+            size={bottomButton==='robot'? 10 : 8} 
+            color={bottomButton==='robot'? "#FFF" : 'darkgray'}/>
           <MIcon 
             name='circle'
-            size={bottomButton==='settings'? 12 : 8} 
-            color={bottomButton==='settings'? "#045257" : 'gray'} />
+            size={bottomButton==='settings'? 10 : 8} 
+            color={bottomButton==='settings'? "#FFF" : 'darkgray'} />
         </View>
 
-        <View style={{width:'95%' , height:'11%', paddingBottom:5, flexDirection:'row', backgroundColor:'white', borderRadius:0, borderWidth:0, borderColor:'#045257', alignItems:'center', justifyContent:'center', borderTopLeftRadius:20, borderTopRightRadius:20}}>
+        <View style={{width:'95%' , height:'11%', marginBottom:12, flexDirection:'row', backgroundColor:'#FFF', borderWidth:0, borderColor:'#045257', alignItems:'center', justifyContent:'center', borderTopLeftRadius:20, borderTopRightRadius:20, borderRadius:20}}>
 
             <TouchableOpacity 
               style={styles.bottomButtons}
@@ -247,8 +272,8 @@ export default function HomePage({navigation}){
               >
               <MIcon 
                 name="cellphone" 
-                size={bottomButton==='user'? 30 : 25} 
-                color={bottomButton==='user'? "#045257" : 'gray'} />
+                size={bottomButton==='user'? 26 : 20} 
+                color={bottomButton==='user'? textColor1 : 'darkgray'} />
               
               <Text style={bottomButton==='user'? styles.bottomText2 : styles.bottomText}>User End</Text>
             
@@ -261,8 +286,8 @@ export default function HomePage({navigation}){
 
               <Icon 
                 name="robot" 
-                size={bottomButton==='robot'? 30 : 25} 
-                color={bottomButton==='robot'? "#045257" : 'gray'}/>
+                size={bottomButton==='robot'? 23 : 20} 
+                color={bottomButton==='robot'? textColor1 : 'darkgray'}/>
               
               <Text style={bottomButton==='robot'? styles.bottomText2 : styles.bottomText}>Robot End</Text>
 
@@ -275,8 +300,8 @@ export default function HomePage({navigation}){
 
               <IIcon 
                 name="settings" 
-                size={bottomButton==='settings'? 30 : 25} 
-                color={bottomButton==='settings'? "#045257" : 'gray'} />
+                size={bottomButton==='settings'? 25 : 20} 
+                color={bottomButton==='settings'? textColor1 : 'darkgray'} />
                 
               <Text style={bottomButton==='settings'? styles.bottomText2 : styles.bottomText}>Settings</Text>
 
@@ -296,9 +321,9 @@ const styles = StyleSheet.create({
     height:55, 
     alignItems:'center', 
     justifyContent:'center', 
-    backgroundColor:'#0d6e75', 
+    backgroundColor:'#483171', 
     borderColor:'#14a2ab',
-    borderRadius:5
+    borderRadius:10
   },
   animationStyle:{
     width:'95%', 
@@ -333,7 +358,7 @@ const styles = StyleSheet.create({
     textAlign:'center',
     fontSize:16,
     fontWeight:'bold',
-    color:'#045257',
+    color:'#483171',
     marginTop:3
   }
 })

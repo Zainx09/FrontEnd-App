@@ -86,13 +86,12 @@ export default function ChangePasswordScreen({navigation}){
     return (
             <View style={styles.container}>
 
-                <Text style={{color:'indigo' , fontSize:15 , fontFamily:'sans-serif-medium',fontWeight:'bold', textAlign:'center', marginBottom:'5%'}}>
-                    
+                <Text style={{color:'#e5be1a' , fontSize:17 , fontFamily:'sans-serif-medium',fontWeight:'bold', textAlign:'center', marginBottom:'5%'}}>
                     CHANGE PASSWORD
                 </Text>
 
                 <TextInput
-                    style={{fontSize:13 , width:'85%', marginBottom:'7%'}}
+                    style={{fontSize:14 , width:'85%', marginBottom:'7%'}}
                     mode="outlined"
                     label="Current Password"
                     placeholder="Type current Password"
@@ -102,7 +101,7 @@ export default function ChangePasswordScreen({navigation}){
                     theme={theme}
                     />
                 <TextInput
-                    style={{fontSize:13 , width:'85%', marginBottom:'2%'}}
+                    style={{fontSize:14 , width:'85%', marginBottom:'2%'}}
                     mode="outlined"
                     label="New Password"
                     placeholder="Type new Password"
@@ -112,7 +111,7 @@ export default function ChangePasswordScreen({navigation}){
                     theme={theme}
                     />
                 <TextInput
-                    style={{fontSize:13 , width:'85%', marginBottom:'10%'}}
+                    style={{fontSize:14 , width:'85%', marginBottom:'10%'}}
                     mode="outlined"
                     label="New Password"
                     placeholder="Type new Password again"
@@ -123,7 +122,7 @@ export default function ChangePasswordScreen({navigation}){
                     />
 
                 <Button 
-                    style={{width:'70%', height:50, justifyContent:'center', borderRadius:5, backgroundColor:'indigo'}}
+                    style={{width:'70%', height:55, justifyContent:'center', borderRadius:5, backgroundColor:'indigo'}}
                     labelStyle={{fontSize:12, fontWeight:'600'}}
                     icon="key"
                     mode="contained" 
@@ -145,7 +144,7 @@ const styles = StyleSheet.create({
         flex:1,
         alignItems:'center',
         paddingTop:'20%',
-        backgroundColor:'white'
+        backgroundColor:'#7C56C3'
       
     },    
   });

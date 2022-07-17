@@ -111,7 +111,7 @@ const SignInScreen=({navigation})=>{
         <View style={styles.container}>
         {/* // <ImageBackground source={require("../Animations/SignUpBg.gif")} resizeMode="cover" style={styles.container}> */}
             <View style={{width:'100%', alignItems:'center' , borderWidth:0}}>
-                <Text style={{marginBottom:10, alignSelf:'center', fontSize:25, fontFamily:'sans-serif-medium', fontWeight:'bold', color:'#e5be1a'}}>LOG IN</Text>
+                <Text style={{marginBottom:10, alignSelf:'center', fontSize:18, fontFamily:'sans-serif-medium', fontWeight:'bold', color:'#e5be1a'}}>LOG IN</Text>
                 
                 <TextInput
                     style={{width:'90%', fontSize:14, marginBottom:10, fontFamily:'sans-serif-medium', backgroundColor:'#ede3ff'}}
@@ -154,7 +154,7 @@ const SignInScreen=({navigation})=>{
                 
             </View>
 
-            <View style={{bottom:-100, right:-200 , borderWidth:0}}>
+            <View style={{bottom:-50, right:-200 , borderWidth:0}}>
                 <Image 
                     source={require('../Animations/signupGif.gif')}  
                     style={{width:250 , height:250,  transform: [{ rotate: "-30deg" }]}}

@@ -20,6 +20,8 @@ const backgroundImage = {
 //otg screen component
 import OtgScreen from "./OtgCodeScreen";
 
+//For sending email
+
 import { AllContext } from '../../App';
 
 const SignUpScreen=({navigation})=>{
@@ -45,9 +47,9 @@ const SignUpScreen=({navigation})=>{
     
     //For Otg Code
     const [sendCode , setSendCode] = useState(false);
-    const [otgCode, setOtgCode] = useState('12345');
+    const [otgCode, setOtgCode] = useState('');
 
-    function verifyCode(){
+    async function verifyCode(){
         if(username!=""){
             if(email!==""){
                 let LowerEmail = email.toLowerCase();
@@ -63,8 +65,31 @@ const SignUpScreen=({navigation})=>{
 
                         }else{
 
-                            showToastWithGravity("Loading...");
-                            setSendCode(true)
+                            // showToastWithGravity("Loading...");
+
+                            let code = Math.floor(Math.random()*90000) + 10000;
+                            code = code.toString();
+                            try{
+                                setLoading(true); setDisable(true);
+
+                                const response = await Api.post('/sendOtgEmail' , { "email":LowerEmail , "code":code});
+
+                                if(response.data){
+                                    showToastWithGravity("Verification code sent");
+                                    setLoading(false); setDisable(false);
+                                    setOtgCode(code);
+                                    setSendCode(true)
+                                }
+                                setLoading(false); setDisable(false);
+
+                                
+
+                            }catch(err){ 
+                                setLoading(false); setDisable(false);
+                                console.log(err.response.data.error)
+                                showToastWithGravity(err.response.data.error)
+                            }  
+                            
                         }                            
   
   
@@ -129,7 +154,8 @@ const SignUpScreen=({navigation})=>{
 
             }catch(err){
                 setLoading(false); setDisable(false);
-                showToastWithGravity("Something went wrong!")
+                console.log(err.response.data.error)
+                showToastWithGravity(err.response.data.error)
             }   
   
         //             }else{
@@ -176,7 +202,7 @@ const SignUpScreen=({navigation})=>{
             {!sendCode ? 
             
                 <View style={{width:'100%', height:'100%', alignItems:'center'  , borderColor:'black' , borderRadius:50 , borderWidth:0}}>
-                    <Text style={{marginBottom:10, fontSize:22, color:'#e5be1a', fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>CREATE ACCOUNT!</Text>
+                    <Text style={{marginBottom:10, fontSize:20, color:'#e5be1a', fontFamily:'sans-serif-medium' , fontWeight:'bold'}}>CREATE ACCOUNT!</Text>
 
                     <TextInput
                         style={{fontSize:14, width:'90%', backgroundColor:'#ede3ff', marginBottom:5}}
@@ -235,16 +261,16 @@ const SignUpScreen=({navigation})=>{
                         <Text style={{fontSize:17, fontWeight:'bold', color:'#e5be1a', fontFamily:'sans-serif-medium'}} onPress={()=>navigation.dispatch(StackActions.replace('SignInScreen'))}>  Sign In</Text>
                     </View>
 
-                    <View style={{bottom:-50, right:-150}}>
+                    <View style={{bottom:0, right:-150}}>
                         <Image 
                             source={require('../Animations/signupGif.gif')}  
-                            style={{width:250 , height:250,  transform: [{ rotate: "-30deg" }]}}
+                            style={{width:200 , height:200,  transform: [{ rotate: "-30deg" }]}}
                         />      
                     </View>
                 </View>
                 :
                 <View style={{width:'100%', height:'70%', alignItems:'center'  , borderColor:'black' , borderRadius:50 , borderWidth:0}}>
-                    <OtgScreen email={email} otgCode={otgCode} signUp={()=> signUp()} loading={loading} disable={disable}/>
+                    <OtgScreen email={email} otgCode={otgCode} signUp={()=> signUp()} loading={loading} disable={disable} setSendCode={setSendCode}/>
                 </View>
             }
             
