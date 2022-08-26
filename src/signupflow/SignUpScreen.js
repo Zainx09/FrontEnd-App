@@ -72,7 +72,11 @@ const SignUpScreen=({navigation})=>{
                             try{
                                 setLoading(true); setDisable(true);
 
-                                const response = await Api.post('/sendOtgEmail' , { "email":LowerEmail , "code":code});
+                                const response = await Api.post('/sendOtgEmail' , 
+                                    { 
+                                        "email":LowerEmail , 
+                                        "code":code
+                                    });
 
                                 if(response.data){
                                     showToastWithGravity("Verification code sent");

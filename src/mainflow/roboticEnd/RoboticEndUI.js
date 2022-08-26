@@ -675,13 +675,8 @@ export default function RoboticEndUI({navigation}){
 
         videoCall ? 
           <View style={{flex:1 , flexDirection:'column'}}>
-            <View style={{height:'12%' , backgroundColor:'white'}}>
-              {/* <Text style={{color:'black'}}> {messages.message} </Text> */}
-              <Text style={{color:'black'}}>{message} </Text>
-              <Text style={{color:'black'}}>{z} </Text>
-              <Text style={{color:'black'}}>{y} </Text>
-            </View>
-            <View style={{height:'88%'}}>
+            
+            <View style={{height:'100%'}}>
               <View style={{backgroundColor:'white'}}>
                 <Text style={{color:'black' , fontSize:11, fontFamily:'sans-serif-medium' , fontWeight:'bold', alignSelf:'center'}}>Email: {callJoinerEmail.toUpperCase()}</Text>
               </View>

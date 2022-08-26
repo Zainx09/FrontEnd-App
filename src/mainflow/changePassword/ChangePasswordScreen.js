@@ -54,7 +54,12 @@ export default function ChangePasswordScreen({navigation}){
                 try{
                     setLoading(true); setDisable(true);
                     
-                    const response = await Api.post('/changePassword' , {"email" : userData.email , "password" : oldPassword , "newPassword" : newPassword});
+                    const response = await Api.post('/changePassword' , 
+                        {
+                            "email" : userData.email , 
+                            "password" : oldPassword , 
+                            "newPassword" : newPassword
+                        });
 
                     setLoading(false); setDisable(false);
 
